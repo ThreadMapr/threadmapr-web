@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreadMapr — The System of Action for the Buying Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05080f;--surface:#0a0f1c;--surface2:#0f1728;--border:#1a2540;--border2:#243256;--text:#eef2ff;--text2:#8494b8;--text3:#3d4f72;--accent:#3b82f6;--accent2:#60a5fa;--gold:#e8a832;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--violet:#8b5cf6}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;font-size:16px;line-height:1.6}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.5}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 40px;height:60px;display:flex;align-items:center;gap:20px;border-bottom:1px solid rgba(26,37,64,.6);background:rgba(5,8,15,.88);backdrop-filter:blur(14px)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.ndot{width:7px;height:7px;background:var(--accent);border-radius:50%;animation:np 2.5s ease-in-out infinite}
+@keyframes np{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.5)}50%{box-shadow:0 0 0 5px rgba(59,130,246,0)}}
+.nav-links{display:flex;gap:22px;margin-left:28px}
+.nav-link{font-size:13px;color:var(--text2);text-decoration:none;transition:color .2s}.nav-link:hover{color:var(--text)}
+.nav-right{margin-left:auto;display:flex;gap:9px;align-items:center}
+.nb{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nb-g{background:transparent;color:var(--text2);border:1px solid var(--border2)}.nb-g:hover{color:var(--text)}
+.nb-p{background:var(--accent);color:#fff}.nb-p:hover{background:#2563eb;transform:translateY(-1px)}
+@media(max-width:640px){.nav-links{display:none}.nb-g{display:none}nav{padding:0 16px}}
+
+/* GATE OVERLAY */
+.gate{position:fixed;inset:0;background:rgba(5,8,15,.93);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);padding:20px}
+.gate-card{background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:36px 38px;max-width:440px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,.65)}
+.gate-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:26px}
+.gate-h{font-family:'Fraunces',serif;font-weight:700;font-size:26px;letter-spacing:-.5px;text-align:center;margin-bottom:8px}
+.gate-h em{font-style:italic;color:var(--gold)}
+.gate-sub{font-size:13px;color:var(--text2);text-align:center;margin-bottom:24px;line-height:1.7}
+.gf{display:flex;flex-direction:column;gap:9px}
+.gi{background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s;width:100%}
+.gi:focus{border-color:var(--accent)}.gi::placeholder{color:var(--text3)}
+.gs{padding:12px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s;margin-top:3px;width:100%}
+.gs:hover{background:#2563eb;transform:translateY(-1px)}
+.gate-note{font-size:10px;color:var(--text3);text-align:center;margin-top:10px;font-family:'DM Mono',monospace}
+.gate-levels{display:flex;gap:7px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+.gl{flex:1;text-align:center;padding:9px 5px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.gl-n{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:3px}
+.gl-title{font-size:11px;font-weight:600;margin-bottom:2px}
+.gl.l1 .gl-title{color:#4ade80}.gl.l2 .gl-title{color:var(--accent2)}.gl.l3 .gl-title{color:#a78bfa}
+.gl-sub{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;line-height:1.4}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:70px 20px 50px;position:relative;overflow:hidden;text-align:center}
+.hglow{position:absolute;top:-15%;left:50%;transform:translateX(-50%);width:900px;height:550px;background:radial-gradient(ellipse,rgba(59,130,246,.11),transparent 65%);pointer-events:none}
+.hfade{position:absolute;bottom:0;left:0;right:0;height:140px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none;z-index:2}
+.eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:20px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent2);margin-bottom:24px;animation:up .6s ease both}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:np 1.8s ease-in-out infinite}
+.hero-h{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(40px,7vw,84px);line-height:1;letter-spacing:-2px;animation:up .7s ease .1s both}
+.hero-h em{font-style:italic;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.32)}
+.hero-h span{color:var(--gold)}
+.hero-sub{font-size:clamp(15px,2vw,19px);color:var(--text2);max-width:520px;margin:20px auto 0;line-height:1.7;font-weight:300;animation:up .7s ease .2s both}
+
+/* DEMO BLOCK */
+.demo-block{width:100%;max-width:880px;margin:44px auto 0;animation:up .9s ease .3s both;position:relative;z-index:3}
+.demo-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:10px}
+
+/* Level pills */
+.lpills{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.lp{display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s;border:1px solid transparent;user-select:none}
+.lp.l1{background:rgba(34,197,94,.07);border-color:rgba(34,197,94,.18);color:#4ade80}
+.lp.l2{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.18);color:var(--accent2)}
+.lp.l3{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.18);color:#a78bfa}
+.lp.ap{filter:brightness(1.4);box-shadow:0 0 12px rgba(34,197,94,.15)}
+.lp-dot{width:5px;height:5px;border-radius:50%}
+.ldiv{color:var(--border2);font-size:12px}
+
+/* Input bar */
+.try-wrap{display:flex;gap:8px;background:rgba(10,15,28,.9);border:1px solid var(--border2);border-radius:13px;padding:8px 8px 8px 18px;margin-bottom:14px;backdrop-filter:blur(8px);box-shadow:0 0 50px rgba(0,0,0,.5);position:relative}
+.try-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.28),transparent);border-radius:13px 13px 0 0}
+.try-in{flex:1;background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;min-width:0}
+.try-in::placeholder{color:var(--text3)}
+.try-btn{display:flex;align-items:center;gap:7px;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.try-btn:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,.4)}
+.try-btn:disabled{background:#1e3a5f;color:#3a5a80;cursor:not-allowed;transform:none;box-shadow:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Canvas */
+.demo-canvas{background:rgba(10,15,28,.78);border:1px solid var(--border2);border-radius:13px;position:relative;overflow:hidden;backdrop-filter:blur(8px)}
+.demo-canvas::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.028) 1px,transparent 1px);background-size:22px 22px;pointer-events:none}
+.dc-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);position:relative;z-index:2;display:none}
+.dc-co{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px}
+.dc-av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:10px}
+.dc-badge{font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:10px;text-transform:uppercase}
+.dc-ring{width:26px;height:26px;position:relative;flex-shrink:0}
+.dc-ring svg{width:26px;height:26px;transform:rotate(-90deg)}
+.dc-ring .rv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:8px}
+.dc-score{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+/* Building state */
+.demo-building{display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:50px 24px;position:relative;z-index:5}
+.demo-building.vis{display:flex}
+.bspinner{width:32px;height:32px;border:2.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.bsources{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.bsrc{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text3);animation:sa .35s ease both}
+@keyframes sa{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.bsteps{display:flex;flex-direction:column;gap:7px;width:100%;max-width:300px}
+.bstep{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;transition:color .3s}
+.bstep.act{color:var(--accent2)}.bstep.done{color:var(--green)}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .3s}
+.bstep.act .bdot{background:var(--accent);animation:np 1s ease-in-out infinite}
+.bstep.done .bdot{background:var(--green)}
+
+/* Empty state */
+.demo-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:56px 24px;color:var(--text3)}
+.demo-empty p{font-size:13px;max-width:260px;text-align:center;line-height:1.6}
+
+/* Nodes */
+#dn-wrap{position:relative;width:100%;min-height:300px;overflow:hidden;display:none}
+.dn{position:absolute;width:158px;background:rgba(15,23,40,.96);border:1.5px solid var(--border2);border-radius:10px;padding:10px 11px;cursor:pointer;user-select:none;transition:border-color .18s,box-shadow .18s;touch-action:none}
+.dn:hover,.dn.sel{border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.dn.gn{border-color:rgba(34,197,94,.35)}.dn.yn{border-color:rgba(245,158,11,.35)}.dn.rn{border-color:rgba(239,68,68,.25)}
+.dn.drag{cursor:grabbing;z-index:10;box-shadow:0 12px 36px rgba(0,0,0,.6)}
+.dn-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.dn-av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:9px;flex-shrink:0}
+.ag{background:#052e16;color:#22c55e}.ay{background:#1c1400;color:#f59e0b}.ar{background:#1f0707;color:#ef4444}
+.dn-name{font-family:'Syne',sans-serif;font-weight:600;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.dn-title{font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.dn-bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-top:5px}
+.dn-fill{height:100%;border-radius:1px}
+.dn-foot{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.dn-tag{font-size:8px;font-family:'DM Mono',monospace;padding:1px 5px;border-radius:3px}
+.teb{background:rgba(59,130,246,.15);color:var(--accent2)}.tch{background:rgba(34,197,94,.15);color:#4ade80}.tinf{background:rgba(245,158,11,.12);color:#fbbf24}.tunk{background:rgba(255,255,255,.05);color:var(--text3)}
+.dn-src{font-family:'DM Mono',monospace;font-size:8px}
+.dn-xtra{display:none;font-size:8px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dn-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+/* Alert bar */
+.dc-alert{display:none;align-items:center;gap:7px;padding:7px 13px;background:rgba(239,68,68,.05);border-top:1px solid rgba(239,68,68,.15);font-size:10px;font-family:'DM Mono',monospace;color:var(--red)}
+.dc-alert.vis{display:flex}
+.aldot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:np .9s ease-in-out infinite;flex-shrink:0}
+
+/* Detail panel */
+.dc-detail{position:absolute;right:0;top:0;bottom:0;width:188px;background:rgba(10,15,28,.97);border-left:1px solid var(--border);display:none;flex-direction:column;z-index:4;animation:sir .18s ease}
+@keyframes sir{from{opacity:0;transform:translateX(7px)}to{opacity:1;transform:translateX(0)}}
+.dc-detail.vis{display:flex}
+.dd-hdr{padding:12px 12px 8px;border-bottom:1px solid var(--border)}
+.dd-av{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;margin-bottom:6px}
+.dd-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px}
+.dd-title{font-size:10px;color:var(--text2);margin-top:2px}
+.dd-row{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid var(--border);font-size:11px}
+.dd-lbl{color:var(--text3);font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase}
+.dd-val{font-weight:500}
+.dd-close{position:absolute;top:7px;right:7px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:3px;border-radius:4px}
+.dd-close:hover{color:var(--text);background:var(--surface2)}
+.dd-cta{padding:10px 12px;margin-top:auto}
+.dd-cta-btn{width:100%;padding:8px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.dd-cta-btn:hover{background:#2563eb}
+
+/* STAT BAR */
+.stat-bar{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:22px 0}
+.stat-in{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-around;padding:0 24px;flex-wrap:wrap;gap:16px}
+.s-item{text-align:center}
+.s-num{font-family:'Syne',sans-serif;font-weight:800;font-size:34px;letter-spacing:-2px}
+.s-lbl{font-size:11px;color:var(--text3);margin-top:3px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px}
+.s-div{width:1px;height:40px;background:var(--border2)}
+
+/* LEVELS SECTION */
+.levels-sec{padding:72px 24px;max-width:1100px;margin:0 auto}
+.sec-lbl{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2);margin-bottom:12px}
+.sec-h{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(26px,4vw,46px);letter-spacing:-1px;line-height:1.1}
+.sec-h em{font-style:italic;color:var(--gold)}
+.sec-sub{font-size:16px;color:var(--text2);max-width:480px;margin-top:12px;line-height:1.7;font-weight:300}
+.levels-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border:1px solid var(--border);border-radius:15px;overflow:hidden;margin-top:44px}
+.lc{background:var(--surface);padding:32px 28px;position:relative}
+.lc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.lc.lc1::before{background:linear-gradient(90deg,var(--green),rgba(34,197,94,.2))}
+.lc.lc2::before{background:linear-gradient(90deg,var(--accent),rgba(59,130,246,.2))}
+.lc.lc3::before{background:linear-gradient(90deg,var(--violet),rgba(139,92,246,.2))}
+.lc-badge{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;margin-bottom:16px}
+.lc1 .lc-badge{background:rgba(34,197,94,.12);color:var(--green)}
+.lc2 .lc-badge{background:rgba(59,130,246,.12);color:var(--accent2)}
+.lc3 .lc-badge{background:rgba(139,92,246,.12);color:#a78bfa}
+.lc-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:8px}
+.lc1 .lc-title{color:var(--green)}.lc2 .lc-title{color:var(--accent2)}.lc3 .lc-title{color:#a78bfa}
+.lc-desc{font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:18px}
+.lc-src{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);margin-bottom:6px}
+.lc-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.lc1 .lc-dot{background:var(--green)}.lc2 .lc-dot{background:var(--accent)}.lc3 .lc-dot{background:var(--violet)}
+.lc-pill{display:inline-block;padding:3px 9px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace;margin-top:16px;text-transform:uppercase;letter-spacing:.5px}
+.lc1 .lc-pill{background:rgba(34,197,94,.09);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.lc2 .lc-pill{background:rgba(59,130,246,.09);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+.lc3 .lc-pill{background:rgba(139,92,246,.09);color:#a78bfa;border:1px solid rgba(139,92,246,.2)}
+
+/* INTEGRATIONS */
+.int-sec{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:52px 24px}
+.int-in{max-width:1000px;margin:0 auto}
+.int-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);text-align:center;margin-bottom:24px}
+.int-g{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.ichip{display:flex;align-items:center;gap:7px;padding:8px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;font-weight:500;transition:all .18s}
+.ichip:hover{background:rgba(255,255,255,.06);color:var(--text);transform:translateY(-2px);border-color:var(--border2)}
+
+/* EXITS */
+.exits-sec{max-width:1100px;margin:0 auto;padding:72px 24px}
+.exits-g{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px}
+.ec{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:22px;transition:all .18s}
+.ec:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+.ec-co{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;letter-spacing:-1px;margin-bottom:7px}
+.ec-reason{font-size:12px;color:var(--text2);line-height:1.6}
+.ec-tag{display:inline-block;padding:2px 7px;background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.2);border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--accent2);margin-top:9px;text-transform:uppercase}
+
+/* CTA */
+.cta-sec{text-align:center;padding:72px 24px;position:relative;overflow:hidden}
+.cta-sec::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:480px;height:480px;background:radial-gradient(circle,rgba(59,130,246,.09),transparent 65%);pointer-events:none}
+.cta-h{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(28px,5vw,56px);letter-spacing:-2px;margin-bottom:16px}
+.cta-h em{font-style:italic;color:var(--gold)}
+.cta-sub{font-size:16px;color:var(--text2);max-width:420px;margin:0 auto 32px;font-weight:300}
+.cta-row{display:flex;gap:9px;max-width:380px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.cta-inp{flex:1;min-width:160px;padding:12px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.cta-inp:focus{border-color:var(--accent)}.cta-inp::placeholder{color:var(--text3)}
+.cta-btn{padding:12px 20px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .18s}
+.cta-btn:hover{background:#2563eb;transform:translateY(-1px)}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:36px 24px}
+.fi{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.flogo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;display:flex;align-items:center;gap:6px;color:var(--text)}
+.flinks{display:flex;gap:20px}.flink{font-size:12px;color:var(--text3);text-decoration:none;transition:color .2s}.flink:hover{color:var(--text2)}
+.fcopy{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s,transform .7s}.reveal.vis{opacity:1;transform:none}
+@media(max-width:768px){.levels-grid{grid-template-columns:1fr}.exits-g{grid-template-columns:1fr}.s-div{display:none}.try-wrap{flex-direction:column}}
+@media(max-width:480px){.try-btn{width:100%}}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div class="gate" id="gate" style="">
+  <div class="gate-card">
+    <div class="gate-logo"><div style="width:7px;height:7px;background:var(--accent);border-radius:50%"></div>ThreadMapr</div>
+    <h2 class="gate-h">Try it <em>before</em><br>the sales call</h2>
+    <p class="gate-sub">Enter a target account. ThreadMapr builds the full org chart and maps every decision-maker's role — so you know exactly who to multithread before your first call.</p>
+    <div class="gf">
+      <input class="gi" id="g-name" placeholder="Your name" type="text"/>
+      <input class="gi" id="g-email" placeholder="Work email" type="email"/>
+      <input class="gi" id="g-co" placeholder="Target account (e.g. Databricks, ServiceNow)" type="text"/>
+      <button class="gs" onclick="unlockDemo()">Build My Org Chart →</button>
+    </div>
+    <div class="gate-note">Early access by invitation. Apply to join.</div>
+    <div class="gate-levels">
+      <div class="gl l1"><div class="gl-n">Level 1</div><div class="gl-title">Public Data</div><div class="gl-sub">Website · LinkedIn · Press</div></div>
+      <div class="gl l2"><div class="gl-n">Level 2</div><div class="gl-title">CRM Sync</div><div class="gl-sub">Salesforce · HubSpot</div></div>
+      <div class="gl l3"><div class="gl-n">Level 3</div><div class="gl-title">Enrichment</div><div class="gl-sub">Clay · Apollo · LI</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#"><div class="ndot"></div>ThreadMapr</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#levels">How It Works</a>
+    <a class="nav-link" href="#integrations">Integrations</a>
+    <a class="nav-link" href="#exits">Investors</a>
+  </div>
+  <div class="nav-right"><a id="nav-access-cta" href="login.html" style="display:none;align-items:center;gap:6px;padding:7px 16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;color:#4ade80;text-decoration:none;transition:all .2s;animation:up .4s ease both" onmouseover="this.style.background='rgba(34,197,94,.18)'" onmouseout="this.style.background='rgba(34,197,94,.1)'">▶ Access Full Product</a>
+    <button class="nb nb-g" onclick="window.location.href='login.html'">Sign In</button>
+    <button class="nb nb-p" onclick="openGate()">Get Early Access</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hglow"></div><div class="hfade"></div>
+  <div class="eyebrow"><div class="eyebrow-dot"></div>Org Chart · Roles · Multithread · <span id="hero-co">Enter your target account</span></div>
+  <h1 class="hero-h">Map the room.<br><em>Then reach it.</em></h1>
+  <p class="hero-sub">ThreadMapr auto-builds the org chart for any account, maps every decision-maker's role, and enriches the contacts you need to multithread. Know exactly who's in the room and why they matter — before you make a single move.</p>
+
+  <div class="demo-block">
+    <div class="demo-lbl">Try it live — enter any company</div>
+
+    <div class="lpills">
+      <div class="lp l1 ap" id="lp1" onclick="setLv(1)"><div class="lp-dot" style="background:#22c55e"></div>Level 1 · Public Data</div>
+      <div class="ldiv">→</div>
+      <div class="lp l2" id="lp2" onclick="setLv(2)"><div class="lp-dot" style="background:var(--accent)"></div>Level 2 · CRM Sync</div>
+      <div class="ldiv">→</div>
+      <div class="lp l3" id="lp3" onclick="setLv(3)"><div class="lp-dot" style="background:#8b5cf6"></div>Level 3 · Enrichment</div>
+    </div>
+
+    <div class="try-wrap">
+      <input class="try-in" id="co-in" placeholder="e.g. Databricks, ServiceNow, Lincoln Financial…" onkeydown="if(event.key==='Enter')build()"/>
+      <button class="try-btn" id="build-btn" onclick="build()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Auto-Build
+      </button>
+    </div>
+
+    <div class="demo-canvas">
+      <div class="dc-top" id="dc-top">
+        <div class="dc-co">
+          <div class="dc-av" id="dc-av" style="background:rgba(59,130,246,.12);color:var(--accent2)">LF</div>
+          <span id="dc-name">Company</span>
+          <span class="dc-badge" id="dc-badge" style="background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)">L1</span>
+        </div>
+        <div class="dc-score">
+          <div class="dc-ring"><svg viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="none" stroke="var(--border)" stroke-width="3"/><circle cx="13" cy="13" r="10" fill="none" id="dr" stroke="var(--yellow)" stroke-width="3" stroke-linecap="round" stroke-dasharray="62.8" stroke-dashoffset="31.4"/></svg><div class="rv" id="dpct" style="color:var(--yellow)">50%</div></div>
+          <span id="dcov" style="font-size:9px">contacts</span>
+        </div>
+      </div>
+
+      <div class="demo-building" id="dbuilding">
+        <div class="bspinner"></div>
+        <div class="bsources" id="bsrc"></div>
+        <div class="bsteps" id="bsteps"></div>
+      </div>
+
+      <div class="demo-empty" id="dempty">
+        <svg width="38" height="38" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1" style="opacity:.25;color:var(--accent)"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="6" y="11" width="4" height="4" rx="1"/><rect x="14" y="11" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><path d="M5 7v2a2 2 0 0 0 2 2h1M19 7v2a2 2 0 0 0-2 2h-1M8 15v1a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-1"/></svg>
+        <p>Enter any company to build the org chart and map every decision-maker — your treasure map to the right contacts.</p>
+      </div>
+
+      <div id="dn-wrap"><svg id="dn-svg"></svg></div>
+
+      <div class="dc-alert" id="dalert">
+        <div class="aldot"></div>
+        <span id="dalert-txt"></span>
+        <span style="margin-left:auto;cursor:pointer" onclick="this.closest('.dc-alert').classList.remove('vis')">✕</span>
+      </div>
+
+      <div class="dc-detail" id="ddetail">
+        <button class="dd-close" onclick="document.getElementById('ddetail').classList.remove('vis');document.querySelectorAll('.dn').forEach(n=>n.classList.remove('sel'))">✕</button>
+        <div class="dd-hdr">
+          <div class="dd-av" id="ddav">?</div>
+          <div class="dd-name" id="ddname">—</div>
+          <div class="dd-title" id="ddtitle">—</div>
+        </div>
+        <div class="dd-row"><span class="dd-lbl">Touch</span><span class="dd-val" id="ddtouch">—</span></div>
+        <div class="dd-row"><span class="dd-lbl">Role</span><span class="dd-val" id="ddrole">—</span></div>
+        <div class="dd-row"><span class="dd-lbl">Dept</span><span class="dd-val" id="dddept">—</span></div>
+        <div class="dd-row"><span class="dd-lbl">Source</span><span class="dd-val" id="ddsrc" style="color:var(--green)">Public</span></div>
+        <div class="dd-cta"><button class="dd-cta-btn" onclick="document.getElementById('gate').style.display='flex'">Request Full Access →</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO VIDEO SECTION -->
+<div style="padding:0 24px 60px;max-width:1000px;margin:0 auto">
+  <div style="text-align:center;margin-bottom:20px">
+    <div style="font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px">Product Demo</div>
+    <h2 style="font-family:'Fraunces',serif;font-weight:700;font-size:clamp(22px,3vw,36px);letter-spacing:-.5px;color:var(--text)">Watch it build the <em style="font-style:italic;color:var(--gold)">treasure map</em></h2>
+  </div>
+  <div style="position:relative;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 24px 80px rgba(0,0,0,.6)">
+    <iframe src="threadmap-demo.html" style="width:100%;aspect-ratio:16/10;border:none;display:block" loading="lazy" title="ThreadMapr Product Demo" allow="autoplay"></iframe>
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:12px">Auto-playing · 45 seconds · click chapters to jump · click the progress bar to scrub</p>
+</div>
+
+<!-- STATS -->
+<div class="stat-bar" id="stats">
+  <div class="stat-in">
+    <div class="s-item"><div class="s-num">73%</div><div class="s-lbl">Of deals lost to single-threading</div></div>
+    <div class="s-div"></div>
+    <div class="s-item"><div class="s-num">6.8</div><div class="s-lbl">Stakeholders in the avg $1M+ deal</div></div>
+    <div class="s-div"></div>
+    <div class="s-item"><div class="s-num">3×</div><div class="s-lbl">Higher win rate when multi-threaded</div></div>
+    <div class="s-div"></div>
+    <div class="s-item"><div class="s-num">1</div><div class="s-lbl">Treasure map to every decision-maker in the deal</div></div>
+  </div>
+</div>
+
+<!-- 3-LEVEL MODEL -->
+<div id="levels" class="levels-sec reveal">
+  <div class="sec-lbl">Three Levels of Intelligence</div>
+  <h2 class="sec-h">The org chart is<br><em>the treasure map.</em></h2>
+  <p class="sec-sub">Start with the full org chart. Enrich every contact. Know exactly who the Economic Buyer, Champion, and Influencer are — and who you're missing. That's the map. The rest is execution.</p>
+  <div class="levels-grid">
+    <div class="lc lc1">
+      <div class="lc-badge">1</div>
+      <div class="lc-title">Build the Org Chart</div>
+      <div class="lc-desc">Enter any company name. ThreadMapr builds the full org chart — named executives, reporting lines, departments, and inferred deal roles. Economic Buyer, Champion, Influencer, Blocker — all mapped before your first call. No CRM, no setup, no guessing.</div>
+      <div class="lc-src"><div class="lc-dot"></div>Company website &amp; leadership pages</div>
+      <div class="lc-src"><div class="lc-dot"></div>LinkedIn public profiles &amp; company pages</div>
+      <div class="lc-src"><div class="lc-dot"></div>Crunchbase, press releases &amp; news</div>
+      <div class="lc-src"><div class="lc-dot"></div>SEC filings &amp; public executive bios</div>
+      <div class="lc-pill">Instant · Any Account · No Setup</div>
+    </div>
+    <div class="lc lc2">
+      <div class="lc-badge">2</div>
+      <div class="lc-title">Enrich Every Contact</div>
+      <div class="lc-desc">Connect your CRM and data providers to fill the gaps in the org chart — verified contact details, confirmed roles, and relationship history on every node. No more guessing if the CFO is the right person. You'll know.</div>
+      <div class="lc-src"><div class="lc-dot"></div>Salesforce contacts &amp; activity log</div>
+      <div class="lc-src"><div class="lc-dot"></div>HubSpot engagement &amp; deal history</div>
+      <div class="lc-src"><div class="lc-dot"></div>Outreach &amp; Salesloft — sequence enrollment &amp; status</div>
+      <div class="lc-src"><div class="lc-dot"></div>Gong — call history &amp; contact confirmation</div>
+      <div class="lc-pill">CRM + Data Providers · 1-Click</div>
+    </div>
+    <div class="lc lc3">
+      <div class="lc-badge">3</div>
+      <div class="lc-title">Multithread with Confidence</div>
+      <div class="lc-desc">With the full org chart mapped and every contact enriched, you know exactly who to add to the deal and in what order. Champion to Economic Buyer. Influencer to Blocker. ThreadMapr shows the path — you execute it.</div>
+      <div class="lc-src"><div class="lc-dot"></div>Who the Economic Buyer is and who has their ear</div>
+      <div class="lc-src"><div class="lc-dot"></div>Which contact is your best Champion path</div>
+      <div class="lc-src"><div class="lc-dot"></div>Where the Influencers and Blockers sit in the structure</div>
+      <div class="lc-src"><div class="lc-dot"></div>Which threads are missing — before the deal stalls</div>
+      <div class="lc-pill">Full Coverage · No Guesswork</div>
+    </div>
+  </div>
+</div>
+
+<!-- INTEGRATIONS -->
+<div id="integrations" class="int-sec">
+  <div class="int-in">
+    <div class="int-lbl">Pulls from your existing stack to build the most complete, accurate org chart possible</div>
+    <div class="int-g">
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#00a1e0"><circle cx="12" cy="12" r="10"/></svg>Salesforce</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7c3aed"><circle cx="12" cy="12" r="10"/></svg>Outreach</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#f59e0b"><rect x="2" y="2" width="20" height="20" rx="4"/></svg>Gong</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#ff7a59"><path d="M12 2L2 7l10 5 10-5z"/></svg>HubSpot</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#0a66c2"><rect x="2" y="2" width="20" height="20" rx="4"/></svg>LinkedIn</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#22c55e"><circle cx="12" cy="12" r="10"/></svg>Clay</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#60a5fa"><circle cx="12" cy="12" r="10"/></svg>Apollo</div>
+      <div class="ichip"><svg width="15" height="15" viewBox="0 0 24 24" fill="#e8a832"><circle cx="12" cy="12" r="10"/></svg>Demandbase</div>
+    </div>
+  </div>
+</div>
+
+<!-- EXITS -->
+<div id="exits" class="exits-sec reveal">
+  <div class="sec-lbl">For Investors &amp; Partners</div>
+  <h2 class="sec-h">Every major GTM platform is<br><em>missing</em> this layer</h2>
+  <p class="sec-sub" style="margin-top:12px">The org chart and multithreading layer sits directly upstream of every CRM, engagement tool, and revenue platform in the market. Every one of them needs it. None of them have built it.</p>
+  <div class="exits-g">
+    <div class="ec"><div class="ec-co">Salesforce</div><div class="ec-reason">The buying group layer embedded into CRM + Data Cloud. Natural fit for Einstein AI and the Account 360 vision.</div><div class="ec-tag">CRM + Data Cloud</div></div>
+    <div class="ec"><div class="ec-co">Gong</div><div class="ec-reason">Gong captures what was said on the call. ThreadMapr maps who should be on the next one. Together: the complete picture of the buying group.</div><div class="ec-tag">Revenue Intelligence</div></div>
+    <div class="ec"><div class="ec-co">Outreach</div><div class="ec-reason">Outreach runs sequences. ThreadMapr tells you who belongs in them and why — the org chart layer that sits upstream of every sequence ever sent.</div><div class="ec-tag">Workflow Ownership</div></div>
+    <div class="ec"><div class="ec-co">HubSpot</div><div class="ec-reason">Mid-market CRM without enterprise buying group depth. ThreadMapr is the differentiator for their upmarket push into $1M+ deals.</div><div class="ec-tag">Mid-Market Push</div></div>
+    <div class="ec"><div class="ec-co">LinkedIn</div><div class="ec-reason">Sales Navigator is a contact list, not org intelligence. ThreadMapr is the structured, actionable layer on top of their relationship graph.</div><div class="ec-tag">Relationship Graph</div></div>
+    <div class="ec"><div class="ec-co">Clay</div><div class="ec-reason">Clay enriches contact data. ThreadMapr puts it in context — org chart position, deal role, and exactly where that contact fits in the multithread.</div><div class="ec-tag">Data + Enrichment</div></div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-sec">
+  <h2 class="cta-h">The treasure map<br><em>to the right contact.</em></h2>
+  <p class="cta-sub">Enter any account. Get the full org chart, every decision-maker's role, and the enriched contacts you need to multithread — before your first call.</p>
+  <div class="cta-row">
+    <input class="cta-inp" id="cta-em" type="email" placeholder="work@yourcompany.com"/>
+    <button class="cta-btn" onclick="ctaSignup()">Request Access</button>
+  </div>
+  <p style="font-size:10px;color:var(--text3);margin-top:12px;font-family:'DM Mono',monospace">Early access by invitation. Apply and we'll be in touch.</p>
+</div>
+
+<footer>
+  <div class="fi">
+    <div class="flogo"><div style="width:6px;height:6px;background:var(--accent);border-radius:50%"></div>ThreadMapr</div>
+    <div class="flinks"><a class="flink" href="#">Privacy</a><a class="flink" href="#">Terms</a><a class="flink" href="/cdn-cgi/l/email-protection#4028252c2c2f003428322521242d2130326e232f2d"><span class="__cf_email__" data-cfemail="d5bdb0b9b9ba95a1bda7b0b4b1b8b4a5a7fbb6bab8">[email&#160;protected]</span></a></div>
+    <div class="fcopy">© 2025 ThreadMapr. All rights reserved.</div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const NW=158,NH=90;
+let nodes=[],rels=[],lv=1,userCo='';
+
+function openGate(){document.getElementById('gate').style.display='flex';}
+function unlockDemo(){
+  const n=document.getElementById('g-name').value.trim();
+  const e=document.getElementById('g-email').value.trim();
+  const c=document.getElementById('g-co').value.trim();
+  const errs=[!n&&'g-name',!e.includes('@')&&'g-email',!c&&'g-co'].filter(Boolean);
+  if(errs.length){errs.forEach(id=>{const el=document.getElementById(id);if(el){el.style.borderColor='var(--red)';setTimeout(()=>el.style.borderColor='',2000);}});return;}
+  userCo=c;
+  document.getElementById('gate').style.display='none';
+  document.getElementById('hero-co').textContent=c;
+  document.getElementById('co-in').value=c;
+  // show access CTA in nav after gate unlock
+  document.getElementById('nav-access-cta').style.display='flex';
+  setTimeout(build,500);
+}
+
+function setLv(n){
+  lv=n;
+  [1,2,3].forEach(i=>document.getElementById(`lp${i}`).classList.toggle('ap',i===n));
+  if(nodes.length)applyLv();
+}
+
+function applyLv(){
+  const cols={1:'#22c55e',2:'var(--accent)',3:'#8b5cf6'};
+  const lbls={1:'L1 · Public',2:'L2 · CRM',3:'L3 · Enriched'};
+  const rgbs={1:'34,197,94',2:'59,130,246',3:'139,92,246'};
+  const b=document.getElementById('dc-badge');
+  if(b){b.textContent=lbls[lv];b.style.background=`rgba(${rgbs[lv]},.1)`;b.style.color=cols[lv];b.style.borderColor=`rgba(${rgbs[lv]},.2)`;}
+  nodes.forEach(nd=>{
+    const el=document.getElementById(`dn-${nd.id}`);if(!el)return;
+    const src=el.querySelector('.dn-src');
+    if(src){src.textContent=lv===1?nd.source:lv===2?'CRM Synced':'Enriched';src.style.color=cols[lv];}
+    const xtr=el.querySelector('.dn-xtra');
+    if(xtr){xtr.style.display=lv>=2?'block':'none';if(lv>=2)xtr.textContent=nd.crm_data||'';}
+  });
+}
+
+async function build(){
+  const co=document.getElementById('co-in').value.trim();
+  if(!co)return;
+  const btn=document.getElementById('build-btn');
+  btn.disabled=true;
+  btn.innerHTML=`<svg style="animation:spin .6s linear infinite" width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Building…`;
+  document.getElementById('dempty').style.display='none';
+  document.getElementById('dn-wrap').style.display='none';
+  document.getElementById('ddetail').classList.remove('vis');
+  document.getElementById('dalert').classList.remove('vis');
+  document.getElementById('dc-top').style.display='none';
+  const db=document.getElementById('dbuilding');db.classList.add('vis');
+  document.getElementById('bsrc').innerHTML='';
+  document.getElementById('bsteps').innerHTML='';
+
+  const steps=[`Searching ${co} leadership page…`,'Scanning LinkedIn company profiles…','Parsing titles and org structure…','Inferring reporting hierarchy…','Building org chart…'];
+  const srcs=['Website','LinkedIn','Crunchbase','Press releases','SEC filings'];
+  steps.forEach((s,i)=>{
+    const el=document.createElement('div');el.className='bstep';el.id=`bs${i}`;
+    el.innerHTML=`<div class="bdot"></div><span>${s}</span>`;
+    document.getElementById('bsteps').appendChild(el);
+    setTimeout(()=>{document.querySelectorAll('.bstep').forEach(e=>e.classList.remove('act'));el.classList.add('act');if(i>0)document.getElementById(`bs${i-1}`).classList.add('done');},i*680);
+  });
+  srcs.forEach((s,i)=>setTimeout(()=>{const c=document.createElement('div');c.className='bsrc';c.textContent=s;document.getElementById('bsrc').appendChild(c);},i*520+300));
+
+  try{
+    const p=`You are a sales intelligence system. Generate a realistic buying group org chart for "${co}" from public sources.
+Return ONLY a JSON object with this exact structure, no other text:
+{"company":"${co}","contacts":[{"id":1,"name":"Full Name","title":"Exact Title","dept":"Department","role":"economic_buyer|champion|influencer|unknown","lastTouch":null,"seniority":"C-suite|VP|Director","source":"LinkedIn|Company website|Crunchbase","crm_data":"Brief note about this person"}],"relationships":[{"manager":1,"report":2}],"alert":"1-sentence gap or risk insight"}
+Generate 6-8 realistic named executives: CEO at top, then CFO, CTO/CIO, CMO, and 2-3 VPs/Directors. Make names, titles and structure realistic for "${co}"'s industry.`;
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1100,messages:[{role:'user',content:p}]})});
+    if(!resp.ok)throw new Error('API');
+    const result=await resp.json();
+    const raw=result.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    renderChart(JSON.parse(raw),co);
+  }catch(e){renderChart(fallback(co),co);}
+}
+
+function fallback(co){
+  return{company:co,contacts:[
+    {id:1,name:'Sarah Mitchell',title:'Chief Executive Officer',dept:'Executive',role:'economic_buyer',lastTouch:null,seniority:'C-suite',source:'LinkedIn',crm_data:'Keynote at Dreamforce 2024'},
+    {id:2,name:'David Chen',title:'Chief Financial Officer',dept:'Finance',role:'unknown',lastTouch:null,seniority:'C-suite',source:'Company website',crm_data:'Princeton MBA, CPA background'},
+    {id:3,name:'Jennifer Walsh',title:'Chief Information Officer',dept:'Technology',role:'champion',lastTouch:null,seniority:'C-suite',source:'LinkedIn',crm_data:'Strong modernization mandate, ex-AWS'},
+    {id:4,name:'Marcus Johnson',title:'VP, Marketing Operations',dept:'Marketing',role:'influencer',lastTouch:null,seniority:'VP',source:'LinkedIn',crm_data:'Owns MarTech stack decisions'},
+    {id:5,name:'Rachel Torres',title:'SVP, Revenue Operations',dept:'Sales',role:'influencer',lastTouch:null,seniority:'VP',source:'Crunchbase',crm_data:'Champion for automation tooling'},
+    {id:6,name:'Kevin Park',title:'Director, IT Infrastructure',dept:'Technology',role:'unknown',lastTouch:null,seniority:'Director',source:'LinkedIn',crm_data:'Handles vendor security reviews'},
+    {id:7,name:'Amanda Liu',title:'Director, Enterprise Architecture',dept:'Technology',role:'unknown',lastTouch:null,seniority:'Director',source:'Press release',crm_data:'Led last ERP migration'},
+  ],relationships:[{manager:1,report:2},{manager:1,report:3},{manager:1,report:4},{manager:1,report:5},{manager:3,report:6},{manager:3,report:7}],
+  alert:`CFO unmapped at ${co} — Economic Buyer role unconfirmed. Enrich and add to the org chart before your next call.`};
+}
+
+function renderChart(data,co){
+  document.getElementById('dbuilding').classList.remove('vis');
+  nodes=data.contacts;rels=data.relationships;
+  layoutN(nodes,rels);
+  const wrap=document.getElementById('dn-wrap');
+  wrap.style.display='block';
+  wrap.innerHTML='<svg id="dn-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></svg>';
+
+  // Score
+  const sc=Math.round(Math.random()*25+20);
+  const ring=document.getElementById('dr');const pct=document.getElementById('dpct');
+  if(ring){const c=62.8;ring.setAttribute('stroke-dashoffset',c-(sc/100)*c);ring.setAttribute('stroke',sc>=60?'var(--green)':sc>=35?'var(--yellow)':'var(--red)');}
+  if(pct){pct.textContent=sc+'%';pct.style.color=sc>=60?'var(--green)':sc>=35?'var(--yellow)':'var(--red)';}
+  const dcovEl=document.getElementById('dcov');if(dcovEl)dcovEl.textContent=`${nodes.length} contacts`;
+  const avEl=document.getElementById('dc-av');if(avEl){avEl.textContent=co.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+  const nmEl=document.getElementById('dc-name');if(nmEl)nmEl.textContent=co;
+  document.getElementById('dc-top').style.display='flex';
+
+  nodes.forEach(nd=>{
+    const inic=nd.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const cls=nd.lastTouch===null?'rn':nd.lastTouch<=7?'gn':'yn';
+    const avc=nd.lastTouch===null?'ar':nd.lastTouch<=7?'ag':'ay';
+    const fp=nd.lastTouch===null?4:nd.lastTouch<=7?88:42;
+    const fc=nd.lastTouch===null?'#ef4444':nd.lastTouch<=7?'#22c55e':'#f59e0b';
+    const rtag={economic_buyer:'EB',champion:'CH',influencer:'INF',unknown:'?'}[nd.role];
+    const rcls={economic_buyer:'teb',champion:'tch',influencer:'tinf',unknown:'tunk'}[nd.role];
+
+    const el=document.createElement('div');
+    el.className=`dn ${cls}`;el.id=`dn-${nd.id}`;
+    el.style.cssText=`left:${nd.x}px;top:${nd.y}px;touch-action:none`;
+    el.innerHTML=`<div class="dn-top"><div class="dn-av ${avc}">${inic}</div><div style="flex:1;min-width:0"><div class="dn-name">${nd.name}</div><div class="dn-title">${nd.title}</div></div></div><div class="dn-bar"><div class="dn-fill" style="width:${fp}%;background:${fc}"></div></div><div class="dn-foot"><span class="dn-tag ${rcls}">${rtag}</span><span class="dn-src" style="color:var(--green);font-family:'DM Mono',monospace;font-size:8px">${nd.source}</span></div><div class="dn-xtra">${nd.crm_data||''}</div>`;
+
+    let pMv=false,pSt={x:0,y:0},pNd={x:nd.x,y:nd.y};
+    el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);pMv=false;pSt={x:e.clientX,y:e.clientY};pNd={x:nd.x,y:nd.y};e.preventDefault();});
+    el.addEventListener('pointermove',e=>{const dx=e.clientX-pSt.x,dy=e.clientY-pSt.y;if(Math.hypot(dx,dy)>5){pMv=true;el.classList.add('drag');const cr=wrap.getBoundingClientRect();nd.x=Math.max(0,Math.min(pNd.x+dx,cr.width-NW));nd.y=Math.max(0,Math.min(pNd.y+dy,cr.height-NH));el.style.left=nd.x+'px';el.style.top=nd.y+'px';renderEdges();}e.preventDefault();});
+    el.addEventListener('pointerup',e=>{el.classList.remove('drag');if(!pMv)showDetail(nd);pMv=false;e.preventDefault();});
+    wrap.appendChild(el);
+  });
+
+  renderEdges();applyLv();
+  if(data.alert){document.getElementById('dalert-txt').textContent=data.alert;document.getElementById('dalert').classList.add('vis');}
+  const btn=document.getElementById('build-btn');
+  btn.disabled=false;btn.innerHTML=`<svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Rebuild`;
+  document.getElementById('hero-co').textContent=co;
+
+  // Resize container
+  const maxY=nodes.reduce((m,c)=>Math.max(m,(c.y||0)+NH+20),260);
+  wrap.style.minHeight=maxY+'px';
+}
+
+function layoutN(contacts,relationships){
+  const ch={};contacts.forEach(c=>ch[c.id]=[]);relationships.forEach(r=>{if(ch[r.manager])ch[r.manager].push(r.report);});
+  const cids=new Set(relationships.map(r=>r.report));
+  const roots=contacts.filter(c=>!cids.has(c.id));
+  const W=document.getElementById('dn-wrap').offsetWidth||820;
+  const HG=22,VG=64,PAD=16;
+
+  function sw(id,seen=new Set()){if(seen.has(id))return NW;seen.add(id);const kids=(ch[id]||[]).filter(k=>!seen.has(k));if(!kids.length)return NW;return Math.max(NW,kids.reduce((s,k)=>s+sw(k,new Set(seen))+HG,-HG));}
+
+  function place(id,cx,y,seen=new Set()){
+    if(seen.has(id))return;seen.add(id);
+    const c=contacts.find(c=>c.id===id);if(!c)return;
+    const kids=(ch[id]||[]).filter(k=>!seen.has(k));
+    if(kids.length){
+      const tw=kids.reduce((s,k)=>s+sw(k,new Set(seen))+HG,-HG);let x=cx-tw/2;
+      kids.forEach(kid=>{const s=sw(kid,new Set(seen));place(kid,x+s/2,y+NH+VG,new Set(seen));x+=s+HG;});
+      const fk=contacts.find(c=>c.id===kids[0]);const lk=contacts.find(c=>c.id===kids[kids.length-1]);
+      c.x=fk&&lk?Math.max(PAD,(fk.x+lk.x+NW)/2-NW/2):Math.max(PAD,cx-NW/2);
+    }else{c.x=Math.max(PAD,cx-NW/2);}
+    c.y=Math.max(PAD,y);
+  }
+  if(roots.length===1){place(roots[0].id,Math.max(W/2,PAD+sw(roots[0].id)/2),PAD);}
+  else{let cx=Math.max(W/2-roots.reduce((s,r)=>s+sw(r.id)+HG*2,-HG*2)/2+sw(roots[0]?.id||1)/2,PAD+NW/2);roots.forEach(r=>{const s=sw(r.id);place(r.id,cx,PAD);cx+=s+HG*2;});}
+  contacts.filter(c=>c.x===undefined).forEach((c,i)=>{c.x=PAD+i*(NW+HG);c.y=PAD;});
+}
+
+function renderEdges(){
+  const svg=document.getElementById('dn-svg');if(!svg)return;
+  svg.innerHTML=`<defs><marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,.5L6,3.5L0,6.5Z" fill="rgba(37,53,80,.85)"/></marker></defs>`;
+  rels.forEach(r=>{
+    const m=nodes.find(c=>c.id===r.manager),ch=nodes.find(c=>c.id===r.report);
+    if(!m||!ch||m.x===undefined||ch.x===undefined)return;
+    const x1=m.x+NW/2,y1=m.y+NH,x2=ch.x+NW/2,y2=ch.y,my=(y1+y2)/2;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',`M ${x1} ${y1} C ${x1} ${my} ${x2} ${my} ${x2} ${y2}`);
+    p.setAttribute('stroke','rgba(37,53,80,.8)');p.setAttribute('stroke-width','1.5');
+    p.setAttribute('fill','none');p.setAttribute('stroke-dasharray','4 3');
+    p.setAttribute('marker-end','url(#da)');svg.appendChild(p);
+  });
+}
+
+function showDetail(nd){
+  document.querySelectorAll('.dn').forEach(e=>e.classList.remove('sel'));
+  document.getElementById(`dn-${nd.id}`)?.classList.add('sel');
+  const inic=nd.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const avc=nd.lastTouch===null?'ar':nd.lastTouch<=7?'ag':'ay';
+  const av=document.getElementById('ddav');if(av){av.textContent=inic;av.className=`dd-av ${avc}`;}
+  document.getElementById('ddname').textContent=nd.name;
+  document.getElementById('ddtitle').textContent=nd.title;
+  document.getElementById('ddtouch').textContent=nd.lastTouch?`${nd.lastTouch}d ago`:'Not yet touched';
+  document.getElementById('ddtouch').style.color=nd.lastTouch===null?'var(--red)':'var(--text)';
+  document.getElementById('ddrole').textContent={economic_buyer:'Economic Buyer',champion:'Champion',influencer:'Influencer',unknown:'Unknown'}[nd.role];
+  document.getElementById('dddept').textContent=nd.dept;
+  const srcEl=document.getElementById('ddsrc');
+  srcEl.textContent=lv===1?nd.source:lv===2?'CRM Synced':'Enriched';
+  srcEl.style.color=lv===1?'var(--green)':lv===2?'var(--accent2)':'#a78bfa';
+  document.getElementById('ddetail').classList.add('vis');
+}
+
+function ctaSub(){
+  const em=document.getElementById('cta-em').value.trim();
+  if(!em||!em.includes('@')){document.getElementById('cta-em').style.borderColor='var(--red)';return;}
+  document.querySelector('.cta-row').innerHTML=`<div style="padding:13px 22px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:14px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>You're in — we'll be in touch.</div>`;
+}
+function ctaSignup(){
+  const em=document.getElementById('cta-em').value.trim();
+  if(!em||!em.includes('@')){document.getElementById('cta-em').style.borderColor='var(--red)';return;}
+  window.location.href='login.html';
+}
+
+// Scroll reveal
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:.1}
