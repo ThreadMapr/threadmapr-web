@@ -617,7 +617,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v2.7</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v2.8</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1177,53 +1177,27 @@ async function runBuildAccount(){
   });
 
   try{
-    const prompt=`You are a sales intelligence analyst. Generate a realistic, detailed buying group org chart for "${co}" based on public sources (LinkedIn, company website, Crunchbase, news).
-
-Return ONLY a valid JSON object — no markdown, no preamble:
-{
-  "company": "${co}",
-  "industry": "actual industry of ${co}",
-  "contacts": [
-    {
-      "id": 1,
-      "name": "Real Full Name",
-      "title": "Exact accurate title",
-      "dept": "Department",
-      "role": "economic_buyer|champion|influencer|blocker|unknown",
-      "seniority": "C-suite|EVP|SVP|VP|Director|Manager",
-      "source": "LinkedIn|Company website|Crunchbase|Press release|SEC filing",
-      "li_headline": "Their LinkedIn headline or professional tagline — 1 sentence",
-      "li_activity": [
-        {"icon": "post", "text": "Recent thing they posted or shared publicly", "time": "X days/weeks ago"},
-        {"icon": "repost", "text": "Something they recently reshared", "time": "X days/weeks ago"}
-      ],
-      "notes": "2-3 sentences of intelligence: their mandate, priorities, how they relate to this account entry, any public signals",
-      "crm_data": "1 sentence: key background fact about this person",
-      "lastTouch": null,
-      "interactions": 0
-    }
-  ],
-  "relationships": [{"manager": 1, "report": 2}],
-  "alert": "1-sentence intelligence gap — which unmapped role is most critical to address first and why"
-}
-
-Generate 7-10 realistic named executives for ${co}:
-- CEO at the root
-- CFO, CTO or CIO, CMO (or their equivalents for this industry)
-- 3-4 VPs/Directors who would influence a technology or services purchase
-- Make every name, title, department, and reporting line realistic for ${co}'s actual industry
-- For each person: write genuine public intelligence in the notes and li_headline fields
-- Assign roles: the person with budget authority = economic_buyer, the most tech/ops-focused exec = champion, others who influence = influencer
-- lastTouch should be null for all (not yet contacted)`;
+    const prompt='Generate a realistic executive org chart for: '+co+'. Return ONLY valid JSON, no markdown. Start with { end with }. Structure: {"company":"'+co+'","industry":"string","contacts":[{"id":1,"name":"Full Name","title":"Exact Title","dept":"Dept","role":"economic_buyer or champion or influencer or unknown","notes":"2 sentences on their mandate","li_headline":"LinkedIn headline","crm_data":"key fact"}],"relationships":[{"manager":1,"report":2}],"alert":"coverage gap"}. Include 6-8 real executives: CEO (id:1), CFO, CTO or CIO, CMO, 2-3 VPs. Use real people if known.';
     const headers={'Content-Type':'application/json'};
-    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});
-    if(!resp.ok)throw new Error(`API ${resp.status}`);
+    const stepsEl=document.getElementById('build-steps-el');
+    if(stepsEl)stepsEl.innerHTML+='<div class="bp-st bsa"><div class="bp-dot"></div><span>Calling AI for '+co+'...</span></div>';
+    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    if(!resp.ok){
+      const errBody=await resp.json().catch(()=>({}));
+      throw new Error('HTTP '+resp.status+': '+(errBody.error||'server error'));
+    }
     const result=await resp.json();
-    const raw=result.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
-    buildData=JSON.parse(raw);
+    if(result.error)throw new Error(result.error.message||'API error');
+    const fullText=(result.content||[]).map(b=>b.text||'').join('').trim();
+    const j1=fullText.indexOf('{'), j2=fullText.lastIndexOf('}');
+    if(j1===-1||j2===-1)throw new Error('No JSON found. Response: '+fullText.slice(0,100));
+    buildData=JSON.parse(fullText.slice(j1,j2+1));
+    if(!buildData.contacts||!buildData.contacts.length)throw new Error('Empty contacts in response');
+    if(stepsEl)stepsEl.innerHTML+='<div class="bp-st bsa"><div class="bp-dot" style="background:var(--green)"></div><span style="color:var(--green)">'+buildData.contacts.length+' contacts loaded from AI</span></div>';
   }catch(err){
     console.error('Build error:', err);
-    showToast('AI build failed: '+err.message+' — using template data');
+    showToast(err.message);
+    if(document.getElementById('build-steps-el'))document.getElementById('build-steps-el').innerHTML+='<div class="bp-st bsa"><div class="bp-dot" style="background:var(--red)"></div><span style="color:var(--red)">'+err.message+'</span></div>';
     buildData={company:co,industry:'Enterprise',contacts:[
       {id:201,name:'Sarah Mitchell',title:'Chief Executive Officer',dept:'Executive',role:'economic_buyer',source:'LinkedIn',crm_data:'CEO since 2022, previously COO',li_headline:'Chief Executive Officer',li_activity:[],notes:'Economic buyer — final authority on enterprise spend.'},
       {id:202,name:'David Chen',title:'Chief Financial Officer',dept:'Finance',role:'unknown',source:'Company website',crm_data:'Princeton MBA, CPA',li_headline:'CFO',li_activity:[],notes:'Controls budget approval. Key to map before procurement.'},
@@ -1256,7 +1230,7 @@ Generate 7-10 realistic named executives for ${co}:
 
 // ─── TREE LAYOUT FOR NEW ACCOUNTS ────────────────────────────────────────────
 function applyTreeLayout(contacts, relationships){
-  const NW=172, NH=80, HG=24, VG=72, PAD=20;
+  const NW=172, NH=80, HG=28, VG=80, PAD=40;
   const children={};
   contacts.forEach(c=>{children[c.id]=[];});
   relationships.forEach(r=>{if(children[r.manager])children[r.manager].push(r.report);});
