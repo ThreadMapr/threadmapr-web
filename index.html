@@ -417,15 +417,46 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
     <div class="flinks">
       <a class="flink" href="#">Privacy</a>
       <a class="flink" href="#">Terms</a>
-      <a class="flink" href="/cdn-cgi/l/email-protection#18707d747477586c706a7d797c7579686a367b7775"><span class="__cf_email__" data-cfemail="0e666b6262614e7a667c6b6f6a636f7e7c206d6163">[email&#160;protected]</span></a>
+      <a class="flink" href="mailto:hello@threadmapr.com">hello@threadmapr.com</a>
     </div>
     <div class="fcopy">© 2025 ThreadMapr. All rights reserved.</div>
   </div>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
+// CTA form submit
 function ctaSub(){
-  const em=document.getElementById('cta-em').value.trim();
-  if(!em||!em.includes('@')){document.getElementById('cta-em').style.borderColor='var(--red)';setTimeout(()=>document.getElementById('cta-em').style.borderColor='',2000);return;}
-  document.querySelector('.cta-form').innerHTML=`<div style="padding:14px 24px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:14px;display:flex;align-items:center;gap:9px"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>You're on the list — we'll be in touch.</div>`;
-  document.getElementById('cta-note
+  const em = document.getElementById('cta-em').value.trim();
+  if(!em || !em.includes('@')){
+    document.getElementById('cta-em').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('cta-em').style.borderColor = '', 2000);
+    return;
+  }
+  document.querySelector('.cta-form').innerHTML = '<div style="padding:14px 24px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:15px;display:flex;align-items:center;gap:10px"><svg width=\'16\' height=\'16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\' stroke-width=\'2.5\'><path d=\'M20 6L9 17l-5-5\'/></svg>You\'re on the list — we\'ll be in touch.</div>';
+  const note = document.getElementById('cta-note');
+  if(note) note.style.display = 'none';
+}
+
+// Scroll reveal — make all .reveal sections visible as they enter viewport
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('vis');
+    }
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// Also immediately reveal anything already in view on load
+window.addEventListener('load', () => {
+  document.querySelectorAll('.reveal').forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if(rect.top < window.innerHeight){
+      el.classList.add('vis');
+    }
+  });
+});
+</script>
+</body>
+</html>
