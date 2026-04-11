@@ -128,7 +128,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;display:flex;ali
 .roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:44px}
 .rc{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:22px 18px;transition:all .2s}
 .rc:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
-.rc-ico{font-size:22px;margin-bottom:12px}
+.rc-ico{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center}
 .rc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:7px}
 .rc-desc{font-size:12px;color:var(--text2);line-height:1.65}
 .rc.eb .rc-name{color:var(--accent2)}.rc.ch .rc-name{color:var(--green)}.rc.inf .rc-name{color:var(--yellow)}.rc.bl .rc-name{color:var(--red)}
@@ -183,8 +183,7 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
     <a class="nav-link" href="#how-it-works">How It Works</a>
     <a class="nav-link" href="#roles">The Four Roles</a>
     <a class="nav-link" href="#integrations">Integrations</a>
-    <a class="nav-link" href="#investors">Investors</a>
-  </div>
+    </div>
   <div class="nav-right">
     <a class="btn btn-ghost" href="login.html">Sign In</a>
     <a class="btn btn-primary" href="login.html">Request Access</a>
@@ -211,7 +210,6 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
       <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
       Request Access
     </a>
-    <a class="btn btn-ghost" href="login.html">Sign In →</a>
   </div>
 
   <!-- ORG CHART PREVIEW -->
@@ -342,22 +340,22 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
     <p class="sec-sub">Every enterprise account has the same cast of decision-makers. ThreadMapr identifies them before you've sent a single email.</p>
     <div class="roles-grid">
       <div class="rc eb">
-        <div class="rc-ico">💰</div>
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--accent2)" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
         <div class="rc-name">Economic Buyer</div>
         <div class="rc-desc">Controls the budget for this category. Most reps don't know who they are until they're three meetings in. ThreadMapr maps them before call one.</div>
       </div>
       <div class="rc ch">
-        <div class="rc-ico">🏆</div>
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--green)" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
         <div class="rc-name">Champion</div>
         <div class="rc-desc">The person inside the account most likely to open the door for you. ThreadMapr identifies who they are before you make first contact.</div>
       </div>
       <div class="rc inf">
-        <div class="rc-ico">🔄</div>
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--yellow)" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M12 11l-5 6M12 11l5 6"/></svg></div>
         <div class="rc-name">Influencer</div>
         <div class="rc-desc">Shapes opinions without owning the decision. Often your best first contact — ThreadMapr shows you how they connect to the Economic Buyer.</div>
       </div>
       <div class="rc bl">
-        <div class="rc-ico">🚧</div>
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--red)" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg></div>
         <div class="rc-name">Blocker</div>
         <div class="rc-desc">The person who will kill your access before you even know they exist. ThreadMapr surfaces them early so you can plan around them.</div>
       </div>
@@ -402,8 +400,8 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
 <section id="request" class="cta reveal">
   <div class="cta-glow"></div>
   <div class="sec-ey" style="justify-content:center;display:flex;margin-bottom:20px">Early Access</div>
-  <h2 class="cta-h">Stop knocking<br><em>cold.</em></h2>
-  <p class="cta-sub">Request early access and be among the first enterprise sales teams to walk into any account already knowing who's in the room.</p>
+  <h2 class="cta-h">Know the account<br><em>before you knock.</em></h2>
+  <p class="cta-sub">The org chart, the roles, the right door in — mapped before your first call. Request access to ThreadMapr.</p>
   <div class="cta-form">
     <input class="cta-inp" id="cta-em" type="email" placeholder="work@yourcompany.com"/>
     <button class="btn btn-primary" onclick="ctaSub()" style="padding:13px 24px;font-size:14px;font-weight:600">Request Access</button>
@@ -417,13 +415,13 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
     <div class="flinks">
       <a class="flink" href="#">Privacy</a>
       <a class="flink" href="#">Terms</a>
-      <a class="flink" href="mailto:hello@threadmapr.com">hello@threadmapr.com</a>
+      <a class="flink" href="/cdn-cgi/l/email-protection#5d35383131321d29352f383c39303c2d2f733e3230"><span class="__cf_email__" data-cfemail="3058555c5c5f704458425551545d5140421e535f5d">[email&#160;protected]</span></a>
     </div>
     <div class="fcopy">© 2025 ThreadMapr. All rights reserved.</div>
   </div>
 </footer>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // CTA form submit
 function ctaSub(){
   const em = document.getElementById('cta-em').value.trim();
@@ -451,14 +449,4 @@ const revealObserver = new IntersectionObserver((entries) => {
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 // Also immediately reveal anything already in view on load
-window.addEventListener('load', () => {
-  document.querySelectorAll('.reveal').forEach(el => {
-    const rect = el.getBoundingClientRect();
-    if(rect.top < window.innerHeight){
-      el.classList.add('vis');
-    }
-  });
-});
-</script>
-</body>
-</html>
+window
