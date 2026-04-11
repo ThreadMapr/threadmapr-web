@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreadMapr — Break Into Any Account</title>
+
+<!-- Social share / OG -->
+<meta name="description" content="The treasure map to every decision-maker. Build the org chart, map every role, and know who to call before your first call.">
+<meta property="og:title" content="ThreadMapr — Break Into Any Account">
+<meta property="og:description" content="The treasure map to every decision-maker. Build the org chart, map every role, and know who to call before your first call.">
+<meta property="og:image" content="https://threadmapr.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://threadmapr.com">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ThreadMapr">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ThreadMapr — Break Into Any Account">
+<meta name="twitter:description" content="The treasure map to every decision-maker. Map every role before your first call.">
+<meta name="twitter:image" content="https://threadmapr.com/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700;1,9..144,900&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#05080f;--surface:#0a0f1c;--surface2:#0f1728;--border:#1a2540;--border2:#243256;--text:#eef2ff;--text2:#8494b8;--text3:#3d4f72;--accent:#3b82f6;--accent2:#60a5fa;--gold:#e8a832;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;--violet:#8b5cf6}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;font-size:16px;line-height:1.6}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:999;opacity:.4}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;display:flex;align-items:center;padding:0 40px;gap:24px;background:rgba(5,8,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid rgba(26,37,64,.7)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.5)}50%{box-shadow:0 0 0 6px rgba(59,130,246,0)}}
+.nav-links{display:flex;gap:28px;margin-left:20px}
+.nav-link{font-size:13px;color:var(--text2);text-decoration:none;transition:color .2s}.nav-link:hover{color:var(--text)}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{color:var(--text)}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#2563eb;transform:translateY(-1px);box-shadow:0 4px 20px rgba(59,130,246,.3)}
+@media(max-width:640px){.nav-links{display:none}.btn-ghost{display:none}nav{padding:0 20px}}
+
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 24px 80px;text-align:center;position:relative;overflow:hidden}
+.hero-glow{position:absolute;top:-10%;left:50%;transform:translateX(-50%);width:1000px;height:600px;background:radial-gradient(ellipse,rgba(59,130,246,.09),transparent 65%);pointer-events:none}
+.hero-fade{position:absolute;bottom:0;left:0;right:0;height:160px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none;z-index:2}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(232,168,50,.07);border:1px solid rgba(232,168,50,.2);border-radius:20px;padding:5px 14px;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold);margin-bottom:28px;animation:fadeUp .6s ease both}
+.eyebrow-dot{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero-h{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(44px,8vw,92px);line-height:.95;letter-spacing:-3px;margin-bottom:28px;animation:fadeUp .7s ease .1s both}
+.hero-h em{font-style:italic;color:var(--gold)}
+.hero-h .ghost{color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.22)}
+.hero-sub{font-size:clamp(16px,2vw,20px);color:var(--text2);max-width:560px;line-height:1.75;font-weight:300;margin-bottom:44px;animation:fadeUp .7s ease .2s both}
+.hero-sub strong{color:var(--text);font-weight:500}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;animation:fadeUp .7s ease .3s both;margin-bottom:60px}
+.hero-cta .btn{padding:14px 28px;font-size:15px;font-weight:600}
+
+/* ORG CHART PREVIEW */
+.preview{width:100%;max-width:820px;margin:0 auto;animation:fadeUp .9s ease .4s both;z-index:3;position:relative}
+.preview-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:12px}
+.preview-card{background:rgba(10,15,28,.88);border:1px solid var(--border2);border-radius:16px;padding:22px;backdrop-filter:blur(12px);position:relative;overflow:hidden}
+.preview-card::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.022) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+.preview-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.28),transparent)}
+.pc-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.pc-left{display:flex;align-items:center;gap:10px}
+.pc-av{width:28px;height:28px;border-radius:7px;background:rgba(59,130,246,.1);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:10px}
+.pc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
+.pc-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:var(--green);border-radius:10px}
+.pc-ring{position:relative;width:32px;height:32px}
+.pc-ring svg{width:32px;height:32px;transform:rotate(-90deg)}
+.pc-ring-v{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:8px;color:var(--yellow)}
+.pc-score{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+.tree{display:flex;flex-direction:column;align-items:center}
+.tree-row{display:flex;gap:10px;justify-content:center;position:relative}
+.v-line{width:1.5px;height:18px;background:rgba(37,53,80,.85);margin:0 auto}
+.h-bar{height:1.5px;background:rgba(37,53,80,.7)}
+
+.nd{background:rgba(14,20,38,.96);border:1.5px solid var(--border2);border-radius:10px;padding:10px 11px;width:155px;transition:border-color .2s}
+.nd.g{border-color:rgba(34,197,94,.38)}
+.nd.y{border-color:rgba(245,158,11,.38)}
+.nd.r{border-color:rgba(239,68,68,.28)}
+.nd.hi{border-color:rgba(59,130,246,.48);box-shadow:0 0 0 2px rgba(59,130,246,.08)}
+.nd-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.av{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:8px;flex-shrink:0}
+.av.g{background:#052e16;color:#22c55e}.av.y{background:#1c1400;color:#f59e0b}.av.r{background:#1f0707;color:#ef4444}.av.b{background:rgba(59,130,246,.1);color:var(--accent2)}
+.nd-name{font-family:'Syne',sans-serif;font-weight:600;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.nd-title{font-size:8px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nd-bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:4px}
+.nd-fill{height:100%;border-radius:1px}
+.nd-foot{display:flex;align-items:center;justify-content:space-between}
+.tag{font-size:7px;font-family:'DM Mono',monospace;padding:1.5px 4px;border-radius:3px}
+.tag.eb{background:rgba(59,130,246,.15);color:var(--accent2)}
+.tag.ch{background:rgba(34,197,94,.15);color:#4ade80}
+.tag.inf{background:rgba(245,158,11,.12);color:#fbbf24}
+.nd-t{font-size:7px;font-family:'DM Mono',monospace}
+
+.alert-bar{display:flex;align-items:center;gap:8px;margin-top:16px;padding:9px 13px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:9px;font-size:11px;font-family:'DM Mono',monospace;color:var(--red)}
+.al-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1s ease-in-out infinite;flex-shrink:0}
+
+/* STATS */
+.stats{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--surface);padding:30px 0}
+.stats-in{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-around;padding:0 24px;flex-wrap:wrap;gap:20px}
+.st{text-align:center}
+.st-n{font-family:'Syne',sans-serif;font-weight:800;font-size:38px;letter-spacing:-2px}
+.st-l{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.8px;margin-top:4px}
+.st-div{width:1px;height:44px;background:var(--border2)}
+@media(max-width:600px){.st-div{display:none}}
+
+/* SECTIONS */
+.sec{padding:88px 24px;max-width:1100px;margin:0 auto}
+.sec-ey{font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--accent2);margin-bottom:14px}
+.sec-h{font-family:'Fraunces',serif;font-weight:700;font-size:clamp(28px,4vw,50px);letter-spacing:-1.5px;line-height:1.05;margin-bottom:16px}
+.sec-h em{font-style:italic;color:var(--gold)}
+.sec-sub{font-size:17px;color:var(--text2);max-width:500px;line-height:1.7;font-weight:300}
+
+/* STEPS */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-top:52px}
+.step{background:var(--surface);padding:36px 28px;position:relative}
+.step::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.step:nth-child(1)::before{background:linear-gradient(90deg,var(--green),rgba(34,197,94,.1))}
+.step:nth-child(2)::before{background:linear-gradient(90deg,var(--accent),rgba(59,130,246,.1))}
+.step:nth-child(3)::before{background:linear-gradient(90deg,var(--gold),rgba(232,168,50,.1))}
+.step-n{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.step:nth-child(1) .step-n{color:var(--green)}.step:nth-child(2) .step-n{color:var(--accent2)}.step:nth-child(3) .step-n{color:var(--gold)}
+.step-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.step:nth-child(1) .step-ico{background:rgba(34,197,94,.08)}.step:nth-child(2) .step-ico{background:rgba(59,130,246,.08)}.step:nth-child(3) .step-ico{background:rgba(232,168,50,.08)}
+.step-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:10px;line-height:1.1}
+.step:nth-child(1) .step-title{color:var(--green)}.step:nth-child(2) .step-title{color:var(--accent2)}.step:nth-child(3) .step-title{color:var(--gold)}
+.step-desc{font-size:13px;color:var(--text2);line-height:1.75;margin-bottom:18px}
+.step-buls{display:flex;flex-direction:column;gap:7px}
+.step-bul{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--text2);line-height:1.5}
+.bul-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.step:nth-child(1) .bul-dot{background:var(--green)}.step:nth-child(2) .bul-dot{background:var(--accent)}.step:nth-child(3) .bul-dot{background:var(--gold)}
+.step-pill{display:inline-block;padding:3px 10px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace;margin-top:16px;text-transform:uppercase;letter-spacing:.5px}
+.step:nth-child(1) .step-pill{background:rgba(34,197,94,.08);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.step:nth-child(2) .step-pill{background:rgba(59,130,246,.08);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+.step:nth-child(3) .step-pill{background:rgba(232,168,50,.08);color:var(--gold);border:1px solid rgba(232,168,50,.2)}
+@media(max-width:768px){.steps{grid-template-columns:1fr}}
+
+/* ROLES */
+.roles-bg{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:72px 24px}
+.roles-in{max-width:1000px;margin:0 auto}
+.roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:44px}
+.rc{background:var(--bg);border:1px solid var(--border2);border-radius:12px;padding:22px 18px;transition:all .2s}
+.rc:hover{transform:translateY(-4px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+.rc-ico{width:32px;height:32px;margin-bottom:14px;display:flex;align-items:center;justify-content:center}
+.rc-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:7px}
+.rc-desc{font-size:12px;color:var(--text2);line-height:1.65}
+.rc.eb .rc-name{color:var(--accent2)}.rc.ch .rc-name{color:var(--green)}.rc.inf .rc-name{color:var(--yellow)}.rc.bl .rc-name{color:var(--red)}
+@media(max-width:768px){.roles-grid{grid-template-columns:repeat(2,1fr)}}
+
+/* INTEGRATIONS */
+.int-wrap{padding:64px 24px;max-width:1000px;margin:0 auto;text-align:center}
+.int-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:28px}
+.int-chips{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;padding:9px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:9px;color:var(--text2);font-size:13px;font-weight:500;transition:all .2s}
+.chip:hover{background:rgba(255,255,255,.06);color:var(--text);transform:translateY(-2px)}
+.chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ACQUIRERS */
+.acq-bg{background:var(--surface);border-top:1px solid var(--border);padding:88px 24px}
+.acq-in{max-width:1100px;margin:0 auto}
+.acq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:48px}
+.ac{background:var(--bg);border:1px solid var(--border);border-radius:13px;padding:24px;transition:all .2s}
+.ac:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.4)}
+.ac-name{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;letter-spacing:-1px;color:var(--text);margin-bottom:8px}
+.ac-why{font-size:12px;color:var(--text2);line-height:1.65}
+.ac-tag{display:inline-block;margin-top:10px;padding:2px 8px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;color:var(--accent2);text-transform:uppercase}
+@media(max-width:768px){.acq-grid{grid-template-columns:1fr}}
+
+/* CTA */
+.cta{padding:96px 24px;text-align:center;position:relative;overflow:hidden}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(59,130,246,.07),transparent 65%);pointer-events:none}
+.cta-h{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(32px,6vw,68px);letter-spacing:-2px;line-height:.95;margin-bottom:20px}
+.cta-h em{font-style:italic;color:var(--gold)}
+.cta-sub{font-size:17px;color:var(--text2);max-width:440px;margin:0 auto 40px;font-weight:300;line-height:1.7}
+.cta-form{display:flex;gap:10px;max-width:420px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.cta-inp{flex:1;min-width:200px;padding:13px 16px;background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+.cta-inp:focus{border-color:var(--accent)}.cta-inp::placeholder{color:var(--text3)}
+.cta-note{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:14px}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:36px 24px}
+.fi{max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.fl{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;color:var(--text)}
+.flinks{display:flex;gap:22px}
+.flink{font-size:12px;color:var(--text3);text-decoration:none;transition:color .2s}.flink:hover{color:var(--text2)}
+.fcopy{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3)}
+
+.reveal{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#"><div class="logo-dot"></div>ThreadMapr</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#how-it-works">How It Works</a>
+    <a class="nav-link" href="#roles">The Four Roles</a>
+    <a class="nav-link" href="#integrations">Integrations</a>
+    </div>
+  <div class="nav-right">
+    <a class="btn btn-ghost" href="login.html">Sign In</a>
+    <a class="btn btn-primary" href="login.html">Request Access</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-fade"></div>
+
+  <div class="eyebrow"><div class="eyebrow-dot"></div>Account Intelligence · Before the First Call</div>
+
+  <h1 class="hero-h">
+    Break into<br><em>any account.</em><br>Before the <span class="ghost">first call.</span>
+  </h1>
+
+  <p class="hero-sub">
+    Every GTM tool assumes you're already in a deal. ThreadMapr is what comes before that. <strong>Map the org chart, identify every decision-maker's role, and know exactly who to contact first</strong> — before you've sent a single email.
+  </p>
+
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="#request">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Request Access
+    </a>
+  </div>
+
+  <!-- ORG CHART PREVIEW -->
+  <div class="preview">
+    <div class="preview-lbl">Live inside ThreadMapr — Breaking into Lincoln Financial</div>
+    <div class="preview-card">
+      <div class="pc-hdr">
+        <div class="pc-left">
+          <div class="pc-av">LF</div>
+          <div class="pc-name">Lincoln Financial Group</div>
+          <div class="pc-badge">L2 · CRM Synced</div>
+        </div>
+        <div class="pc-score">
+          <div class="pc-ring">
+            <svg viewBox="0 0 32 32">
+              <circle cx="16" cy="16" r="11" fill="none" stroke="rgba(37,53,80,1)" stroke-width="3"/>
+              <circle cx="16" cy="16" r="11" fill="none" stroke="var(--yellow)" stroke-width="3" stroke-linecap="round" stroke-dasharray="69.1" stroke-dashoffset="33.9"/>
+            </svg>
+            <div class="pc-ring-v">51%</div>
+          </div>
+          <span>Coverage</span>
+        </div>
+      </div>
+
+      <div class="tree">
+        <div class="tree-row">
+          <div class="nd hi">
+            <div class="nd-top"><div class="av b">DG</div><div><div class="nd-name">Dennis Glass</div><div class="nd-title">Chief Executive Officer</div></div></div>
+            <div class="nd-bar"><div class="nd-fill" style="width:10%;background:var(--red)"></div></div>
+            <div class="nd-foot"><span class="tag eb">Econ. Buyer</span><span class="nd-t" style="color:var(--red)">Never reached</span></div>
+          </div>
+        </div>
+        <div class="v-line"></div>
+        <div style="position:relative;width:100%;display:flex;justify-content:center">
+          <svg style="position:absolute;top:0;pointer-events:none;overflow:visible" width="1" height="1">
+            <line x1="-165" y1="0" x2="165" y2="0" stroke="rgba(37,53,80,.7)" stroke-width="1.5"/>
+          </svg>
+          <div class="tree-row" style="gap:10px">
+            <div class="nd g">
+              <div class="nd-top"><div class="av g">JC</div><div><div class="nd-name">Jennifer Charters</div><div class="nd-title">Chief Information Officer</div></div></div>
+              <div class="nd-bar"><div class="nd-fill" style="width:88%;background:var(--green)"></div></div>
+              <div class="nd-foot"><span class="tag ch">Champion</span><span class="nd-t" style="color:var(--green)">4d ago</span></div>
+            </div>
+            <div class="nd r">
+              <div class="nd-top"><div class="av r">CN</div><div><div class="nd-name">Christopher Neczypor</div><div class="nd-title">Chief Financial Officer</div></div></div>
+              <div class="nd-bar"><div class="nd-fill" style="width:3%;background:var(--red)"></div></div>
+              <div class="nd-foot"><span class="tag eb">Econ. Buyer</span><span class="nd-t" style="color:var(--red)">Never</span></div>
+            </div>
+            <div class="nd y">
+              <div class="nd-top"><div class="av y">TR</div><div><div class="nd-name">Timothy Rouse</div><div class="nd-title">Chief Revenue Officer</div></div></div>
+              <div class="nd-bar"><div class="nd-fill" style="width:32%;background:var(--yellow)"></div></div>
+              <div class="nd-foot"><span class="tag inf">Influencer</span><span class="nd-t" style="color:var(--yellow)">28d ago</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="alert-bar"><div class="al-dot"></div>CFO unidentified — Economic Buyer role unknown. Map and enrich before your first outreach.</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-in">
+    <div class="st"><div class="st-n">73%</div><div class="st-l">Of reps have no plan before the first call</div></div>
+    <div class="st-div"></div>
+    <div class="st"><div class="st-n">6.8</div><div class="st-l">Decision-makers in the avg enterprise account</div></div>
+    <div class="st-div"></div>
+    <div class="st"><div class="st-n">3×</div><div class="st-l">Higher response rate with a warm intro path</div></div>
+    <div class="st-div"></div>
+    <div class="st"><div class="st-n">0</div><div class="st-l">Tools built for after the deal. ThreadMapr is before it.</div></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="sec reveal">
+  <div class="sec-ey">How It Works</div>
+  <h2 class="sec-h">Know the account<br><em>before you knock.</em></h2>
+  <p class="sec-sub">Three steps to break into any account. Build the map, enrich the contacts, find the right door in.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-n">Step 01 — Map the Account</div>
+      <div class="step-ico"><svg width="20" height="20" fill="none" stroke="var(--green)" viewBox="0 0 24 24" stroke-width="1.8"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><path d="M5 7v2a2 2 0 0 0 2 2h1M19 7v2a2 2 0 0 0-2 2h-1M8 15v1a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-1"/></svg></div>
+      <div class="step-title">Build the Org Chart Cold</div>
+      <div class="step-desc">Enter any target account. ThreadMapr builds the full org chart from public data — named executives, reporting lines, departments, and inferred buying roles. Zero prior relationship required.</div>
+      <div class="step-buls">
+        <div class="step-bul"><div class="bul-dot"></div>Company website &amp; leadership pages</div>
+        <div class="step-bul"><div class="bul-dot"></div>LinkedIn profiles &amp; company pages</div>
+        <div class="step-bul"><div class="bul-dot"></div>Crunchbase, press releases &amp; news</div>
+        <div class="step-bul"><div class="bul-dot"></div>SEC filings &amp; executive bios</div>
+      </div>
+      <div class="step-pill">Instant · Any Account</div>
+    </div>
+    <div class="step">
+      <div class="step-n">Step 02 — Enrich the Contacts</div>
+      <div class="step-ico"><svg width="20" height="20" fill="none" stroke="var(--accent2)" viewBox="0 0 24 24" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+      <div class="step-title">Enrich Every Contact</div>
+      <div class="step-desc">Fill every node with verified contact details and confirmed roles. Find out which contacts your colleagues already know — and who can make a warm introduction before you cold call.</div>
+      <div class="step-buls">
+        <div class="step-bul"><div class="bul-dot"></div>Salesforce &amp; HubSpot contact history</div>
+        <div class="step-bul"><div class="bul-dot"></div>Outreach &amp; Salesloft sequence status</div>
+        <div class="step-bul"><div class="bul-dot"></div>Gong call history &amp; contact confirmation</div>
+        <div class="step-bul"><div class="bul-dot"></div>Clay, Apollo &amp; LinkedIn Sales Navigator</div>
+      </div>
+      <div class="step-pill">CRM + Data Providers</div>
+    </div>
+    <div class="step">
+      <div class="step-n">Step 03 — Find the Door In</div>
+      <div class="step-ico"><svg width="20" height="20" fill="none" stroke="var(--gold)" viewBox="0 0 24 24" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div class="step-title">Find Your Way In</div>
+      <div class="step-desc">With the org chart mapped and contacts enriched, you know exactly who to contact first and why. Find the Champion path to the Economic Buyer before your first email lands.</div>
+      <div class="step-buls">
+        <div class="step-bul"><div class="bul-dot"></div>Who the Economic Buyer is before you ever meet them</div>
+        <div class="step-bul"><div class="bul-dot"></div>Which contact is your best path to a warm intro</div>
+        <div class="step-bul"><div class="bul-dot"></div>Where the Influencers and Blockers sit in the structure</div>
+        <div class="step-bul"><div class="bul-dot"></div>Which roles are unmapped so you don't walk in blind</div>
+      </div>
+      <div class="step-pill">Cold Account · Warm Entry</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOUR ROLES -->
+<div id="roles" class="roles-bg">
+  <div class="roles-in reveal">
+    <div class="sec-ey">The Four Roles</div>
+    <h2 class="sec-h">Know who's in the<br><em>account.</em></h2>
+    <p class="sec-sub">Every enterprise account has the same cast of decision-makers. ThreadMapr identifies them before you've sent a single email.</p>
+    <div class="roles-grid">
+      <div class="rc eb">
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--accent2)" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg></div>
+        <div class="rc-name">Economic Buyer</div>
+        <div class="rc-desc">Controls the budget for this category. Most reps don't know who they are until they're three meetings in. ThreadMapr maps them before call one.</div>
+      </div>
+      <div class="rc ch">
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--green)" viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <div class="rc-name">Champion</div>
+        <div class="rc-desc">The person inside the account most likely to open the door for you. ThreadMapr identifies who they are before you make first contact.</div>
+      </div>
+      <div class="rc inf">
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--yellow)" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M12 11l-5 6M12 11l5 6"/></svg></div>
+        <div class="rc-name">Influencer</div>
+        <div class="rc-desc">Shapes opinions without owning the decision. Often your best first contact — ThreadMapr shows you how they connect to the Economic Buyer.</div>
+      </div>
+      <div class="rc bl">
+        <div class="rc-ico"><svg width="22" height="22" fill="none" stroke="var(--red)" viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg></div>
+        <div class="rc-name">Blocker</div>
+        <div class="rc-desc">The person who will kill your access before you even know they exist. ThreadMapr surfaces them early so you can plan around them.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTEGRATIONS -->
+<div id="integrations" class="int-wrap reveal">
+  <div class="int-lbl">Layers on top of your existing stack to build the most complete account map possible</div>
+  <div class="int-chips">
+    <div class="chip"><div class="chip-dot" style="background:#00a1e0"></div>Salesforce</div>
+    <div class="chip"><div class="chip-dot" style="background:#7c3aed"></div>Outreach</div>
+    <div class="chip"><div class="chip-dot" style="background:#f59e0b"></div>Gong</div>
+    <div class="chip"><div class="chip-dot" style="background:#ff7a59"></div>HubSpot</div>
+    <div class="chip"><div class="chip-dot" style="background:#0a66c2"></div>LinkedIn</div>
+    <div class="chip"><div class="chip-dot" style="background:#22c55e"></div>Clay</div>
+    <div class="chip"><div class="chip-dot" style="background:#60a5fa"></div>Apollo</div>
+    <div class="chip"><div class="chip-dot" style="background:#e8a832"></div>Demandbase</div>
+    <div class="chip"><div class="chip-dot" style="background:#8b5cf6"></div>Salesloft</div>
+  </div>
+</div>
+
+<!-- ACQUIRERS -->
+<div id="investors" class="acq-bg">
+  <div class="acq-in reveal">
+    <div class="sec-ey">For Investors &amp; Partners</div>
+    <h2 class="sec-h">Every GTM platform starts<br><em>too late.</em></h2>
+    <p class="sec-sub">CRMs, sequencers, and revenue intelligence tools are all built for deals that already exist. ThreadMapr is the layer that comes before all of them — the account intelligence that turns a cold target into a warm opportunity.</p>
+    <div class="acq-grid">
+      <div class="ac"><div class="ac-name">Salesforce</div><div class="ac-why">ThreadMapr is the account intelligence layer that feeds CRM. Every contact, every role, every relationship — mapped before the opportunity is ever created.</div><div class="ac-tag">CRM + Data Cloud</div></div>
+      <div class="ac"><div class="ac-name">Gong</div><div class="ac-why">Gong starts at the first call. ThreadMapr is everything you need to know before that call happens — who to call, what role they play, and who introduced you.</div><div class="ac-tag">Revenue Intelligence</div></div>
+      <div class="ac"><div class="ac-name">Outreach</div><div class="ac-why">Outreach sends emails. ThreadMapr tells you who to send them to and in what order — the account map that every sequence should start from but never does.</div><div class="ac-tag">Workflow Ownership</div></div>
+      <div class="ac"><div class="ac-name">HubSpot</div><div class="ac-why">Mid-market CRM moving upmarket. ThreadMapr is the account intelligence layer that makes $500K+ enterprise accounts approachable for their reps.</div><div class="ac-tag">Mid-Market Push</div></div>
+      <div class="ac"><div class="ac-name">LinkedIn</div><div class="ac-why">Sales Navigator finds contacts. ThreadMapr maps how they relate to each other, what role they play in the account, and who your best path in actually is.</div><div class="ac-tag">Relationship Graph</div></div>
+      <div class="ac"><div class="ac-name">Clay</div><div class="ac-why">Clay enriches contact data. ThreadMapr structures it into an org chart with roles, relationships, and a clear path into the account.</div><div class="ac-tag">Data + Enrichment</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section id="request" class="cta reveal">
+  <div class="cta-glow"></div>
+  <div class="sec-ey" style="justify-content:center;display:flex;margin-bottom:20px">Early Access</div>
+  <h2 class="cta-h">Know the account<br><em>before you knock.</em></h2>
+  <p class="cta-sub">The org chart, the roles, the right door in — mapped before your first call. Request access to ThreadMapr.</p>
+  <div class="cta-form">
+    <input class="cta-inp" id="cta-em" type="email" placeholder="work@yourcompany.com"/>
+    <button class="btn btn-primary" onclick="ctaSub()" style="padding:13px 24px;font-size:14px;font-weight:600">Request Access</button>
+  </div>
+  <div class="cta-note" id="cta-note">Early access by invitation. Apply and we'll be in touch.</div>
+</section>
+
+<footer>
+  <div class="fi">
+    <div class="fl"><div class="logo-dot"></div>ThreadMapr</div>
+    <div class="flinks">
+      <a class="flink" href="#">Privacy</a>
+      <a class="flink" href="#">Terms</a>
+      <a class="flink" href="mailto:hello@threadmapr.com">hello@threadmapr.com</a>
+    </div>
+    <div class="fcopy">© 2025 ThreadMapr. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+function ctaSub(){
+  const em = document.getElementById('cta-em').value.trim();
+  if(!em || !em.includes('@')){
+    document.getElementById('cta-em').style.borderColor = 'var(--red)';
+    setTimeout(() => document.getElementById('cta-em').style.borderColor = '', 2000);
+    return;
+  }
+  document.querySelector('.cta-form').innerHTML = '<div style="padding:14px 24px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:15px;display:flex;align-items:cen
