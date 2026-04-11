@@ -617,7 +617,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v2.6</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v2.7</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1216,14 +1216,14 @@ Generate 7-10 realistic named executives for ${co}:
 - Assign roles: the person with budget authority = economic_buyer, the most tech/ops-focused exec = champion, others who influence = influencer
 - lastTouch should be null for all (not yet contacted)`;
     const headers={'Content-Type':'application/json'};
-    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:prompt}]})});
     if(!resp.ok)throw new Error(`API ${resp.status}`);
     const result=await resp.json();
     const raw=result.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
     buildData=JSON.parse(raw);
   }catch(err){
     console.error('Build error:', err);
-    showToast('Using public data for '+co+' — enriching with AI');
+    showToast('AI build failed: '+err.message+' — using template data');
     buildData={company:co,industry:'Enterprise',contacts:[
       {id:201,name:'Sarah Mitchell',title:'Chief Executive Officer',dept:'Executive',role:'economic_buyer',source:'LinkedIn',crm_data:'CEO since 2022, previously COO',li_headline:'Chief Executive Officer',li_activity:[],notes:'Economic buyer — final authority on enterprise spend.'},
       {id:202,name:'David Chen',title:'Chief Financial Officer',dept:'Finance',role:'unknown',source:'Company website',crm_data:'Princeton MBA, CPA',li_headline:'CFO',li_activity:[],notes:'Controls budget approval. Key to map before procurement.'},
@@ -2085,7 +2085,7 @@ Return ONLY a valid JSON object with exactly these four keys (no markdown, no pr
     const resp = await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})
     });
     const data = await resp.json();
     const raw = data.content?.map(b=>b.text||'').join('').trim().replace(/```json|```/g,'').trim();
@@ -2435,7 +2435,7 @@ Format: Return a JSON array of exactly 5 strings, each a complete question. No p
 
   try{
     const headers={'Content-Type':'application/json'};
-    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
     if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||`API error ${resp.status}`);}
     const data=await resp.json();
     const raw=data.content?.map(b=>b.text||'').join('').trim();
@@ -2600,7 +2600,7 @@ Write concise structured notes with sections:
 Plain text only, use ** only for section headers. Insurance/retirement industry context throughout.`;
   try{
     const headers={'Content-Type':'application/json'};if(userApiKey)headers['x-api-key']=userApiKey;
-    const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
     if(!resp.ok){const er=await resp.json();throw new Error(er.error?.message||`API error ${resp.status}`);}
     const data=await resp.json();const text=data.content?.map(b=>b.text||'').join('').trim();if(!text)throw new Error('Empty response');
     clearInterval(iv);aiPreviewText=text;if(ld)ld.classList.remove('visible');
