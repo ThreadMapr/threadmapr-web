@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ThreadMapr — Account Planning Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#030508;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow:hidden}
+
+/* PLAYER SHELL */
+.player{width:min(960px,100vw);aspect-ratio:16/10;position:relative;border-radius:12px;overflow:hidden;box-shadow:0 32px 100px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.06)}
+@media(max-width:640px){.player{aspect-ratio:4/3}}
+
+/* BROWSER CHROME */
+.chrome{height:36px;background:#0d111e;border-bottom:1px solid #1a2540;display:flex;align-items:center;padding:0 14px;gap:12px;flex-shrink:0;position:relative;z-index:10}
+.dots{display:flex;gap:6px}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.url-bar{flex:1;max-width:340px;margin:0 auto;background:#161d30;border:1px solid #1e2d45;border-radius:6px;padding:4px 12px;font-size:11px;font-family:'DM Mono',monospace;color:#4a5b77;text-align:center}
+.chrome-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.chrome-tab{font-family:'DM Mono',monospace;font-size:10px;color:#4a5b77}
+
+/* SCENES CONTAINER */
+.scenes{position:relative;flex:1;overflow:hidden;background:#0b0f19}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .5s ease}
+.scene.active{opacity:1;pointer-events:all}
+
+/* ── SCENE: INTRO ── */
+#s-intro{background:radial-gradient(ellipse at center,#0f1728 0%,#050810 70%);align-items:center;justify-content:center;text-align:center;gap:20px}
+.intro-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(28px,5vw,52px);color:#eef2ff;display:flex;align-items:center;justify-content:center;gap:12px;opacity:0;transform:translateY(12px);transition:all .6s ease}
+.intro-logo.in{opacity:1;transform:translateY(0)}
+.intro-dot{width:12px;height:12px;background:#3b82f6;border-radius:50%;animation:nd 2.5s ease-in-out infinite}
+@keyframes nd{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.5)}50%{box-shadow:0 0 0 7px rgba(59,130,246,0)}}
+.intro-tag{font-family:'DM Mono',monospace;font-size:clamp(10px,1.8vw,14px);color:#4a5b77;text-transform:uppercase;letter-spacing:3px;opacity:0;transition:opacity .6s ease .3s}
+.intro-tag.in{opacity:1}
+.intro-sub{font-size:clamp(13px,2vw,17px);color:#8b9ab4;max-width:420px;line-height:1.6;opacity:0;transition:opacity .6s ease .5s;font-weight:300}
+.intro-sub.in{opacity:1}
+
+/* ── MINI APP CHROME (shared by app scenes) ── */
+.app-shell{display:flex;flex-direction:column;height:100%}
+.app-header{height:44px;background:#111827;border-bottom:1px solid #1e2d45;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:5}
+.ah-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:#e2e8f0;display:flex;align-items:center;gap:6px}
+.ah-dot{width:6px;height:6px;background:#3b82f6;border-radius:50%;animation:nd 2.5s ease-in-out infinite}
+.ah-div{width:1px;height:18px;background:#1e2d45}
+.ah-label{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#4a5b77}
+.ah-back{display:flex;align-items:center;gap:5px;padding:5px 10px;background:transparent;border:1px solid #1e2d45;border-radius:7px;color:#8b9ab4;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer}
+.ah-right{margin-left:auto;display:flex;align-items:center;gap:7px}
+.ah-pill{font-family:'DM Mono',monospace;font-size:10px;padding:3px 8px;border-radius:10px;border:1px solid #1e2d45;color:#8b9ab4}
+.ah-pill.sfdc{border-color:rgba(0,161,224,.3);color:#00a1e0}
+.ah-btn{padding:5px 11px;border-radius:7px;border:none;font-size:11px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.ah-btn-ghost{background:transparent;color:#8b9ab4;border:1px solid #1e2d45}
+.ah-btn-primary{background:#3b82f6;color:#fff}
+.ah-btn-insights{background:linear-gradient(135deg,#1e3a5f,#1a2d4d);color:#60a5fa;border:1px solid #2a4a7f;display:flex;align-items:center;gap:5px}
+.ah-acct-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#e2e8f0}
+.ah-badge{font-family:'DM Mono',monospace;font-size:9px;padding:2px 7px;border-radius:5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa}
+.app-body{flex:1;display:flex;overflow:hidden}
+
+/* ── SCENE: ACCOUNTS ── */
+.accounts-body{flex:1;overflow-y:auto;background:#0b0f19;padding:0 0 20px}
+.pipe-bar{display:flex;border-bottom:1px solid #1e2d45;background:#111827}
+.pipe-stat{flex:1;padding:12px 16px;border-right:1px solid #1e2d45}
+.pipe-stat:last-child{border-right:none}
+.pipe-num{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-.5px;color:#e2e8f0}
+.pipe-lbl{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:#4a5b77;margin-top:2px}
+.gbu-sec{padding:16px 16px 0}
+.gbu-hdr{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.gbu-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#4a5b77}
+.gbu-rule{flex:1;height:1px;background:#1e2d45}
+.gbu-cnt{font-family:'DM Mono',monospace;font-size:9px;color:#4a5b77;background:#1a2236;padding:1px 6px;border-radius:8px;border:1px solid #1e2d45}
+.acct-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ac{background:#111827;border:1.5px solid #1e2d45;border-radius:10px;overflow:hidden;transition:border-color .2s;opacity:0;transform:translateY(8px);transition:all .4s ease}
+.ac.in{opacity:1;transform:translateY(0)}
+.ac-top{display:flex;align-items:flex-start;gap:10px;padding:13px 13px 10px}
+.ac-av{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;flex-shrink:0}
+.ac-info{flex:1;min-width:0}
+.ac-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac-sub{display:flex;align-items:center;gap:5px;margin-top:3px}
+.ac-ticker{font-family:'DM Mono',monospace;font-size:8px;padding:1px 5px;border-radius:4px;background:#1a2236;border:1px solid #1e2d45;color:#4a5b77}
+.ac-stage{font-family:'DM Mono',monospace;font-size:8px;padding:1px 5px;border-radius:4px}
+.stage-ev{background:rgba(0,161,224,.1);color:#60c8f0}.stage-qu{background:rgba(245,158,11,.1);color:#f59e0b}
+.ac-ring{width:36px;height:36px;position:relative;flex-shrink:0}
+.ac-ring svg{width:36px;height:36px;transform:rotate(-90deg)}
+.rv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:9px}
+.ac-stats{display:flex;border-top:1px solid #1e2d45}
+.acs{flex:1;padding:8px 10px;border-right:1px solid #1e2d45;text-align:center}
+.acs:last-child{border-right:none}
+.acs-v{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:-.5px}
+.acs-l{font-size:8px;color:#4a5b77;font-family:'DM Mono',monospace;text-transform:uppercase;margin-top:1px}
+.ac-actions{display:flex;border-top:1px solid #1e2d45}
+.ac-btn{flex:1;padding:8px;background:transparent;border:none;color:#8b9ab4;font-family:'DM Sans',sans-serif;font-size:10px;cursor:pointer;border-right:1px solid #1e2d45;display:flex;align-items:center;justify-content:center;gap:4px}
+.ac-btn:last-child{border-right:none}
+.ac-level{font-family:'DM Mono',monospace;font-size:8px;padding:2px 5px;border-radius:4px}
+.lv1{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2)}
+.lv2{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2)}
+
+/* ── SCENE: BUILD MODAL ── */
+.modal-overlay-demo{position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:20}
+.demo-modal{background:#111827;border:1px solid #253550;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.6);width:min(420px,90%);overflow:hidden;opacity:0;transform:scale(.95) translateY(10px);transition:all .35s ease}
+.demo-modal.in{opacity:1;transform:scale(1) translateY(0)}
+.dm-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1e2d45}
+.dm-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;color:#e2e8f0}
+.dm-tabs{display:flex;border-bottom:1px solid #1e2d45}
+.dm-tab{flex:1;padding:9px;background:transparent;border:none;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#4a5b77;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+.dm-tab.dt-act{color:#60a5fa;border-bottom-color:#3b82f6}
+.dm-body{padding:14px 16px}
+.lm-strip{display:flex;gap:5px;margin-bottom:12px}
+.lm-c{flex:1;padding:8px 5px;background:#1a2236;border:1px solid #1e2d45;border-radius:7px;text-align:center;position:relative;overflow:hidden}
+.lm-c::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.lm1c::before{background:#22c55e}.lm2c::before{background:#3b82f6}.lm3c::before{background:#8b5cf6}
+.lm-c.lm-act{border-color:rgba(34,197,94,.35)}
+.lmn{font-family:'DM Mono',monospace;font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#4a5b77;margin-bottom:2px}
+.lmt{font-size:10px;font-weight:600}.lm1c .lmt{color:#22c55e}.lm2c .lmt{color:#60a5fa}.lm3c .lmt{color:#a78bfa}
+.lms{font-size:8px;color:#4a5b77;font-family:'DM Mono',monospace}
+.dm-form-lbl{font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#4a5b77;margin-bottom:5px}
+.dm-input-row{display:flex;gap:7px;margin-bottom:10px}
+.dm-input{flex:1;background:#1a2236;border:1px solid #253550;color:#e2e8f0;border-radius:7px;padding:9px 11px;font-family:'DM Sans',sans-serif;font-size:13px}
+.dm-input.focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.12)}
+.dm-btn{padding:9px 15px;background:#3b82f6;color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.dm-note{font-size:10px;color:#4a5b77;font-family:'DM Mono',monospace;line-height:1.5}
+.dm-footer{padding:10px 16px;border-top:1px solid #1e2d45;display:flex;justify-content:flex-end;gap:7px}
+
+/* ── SCENE: BUILDING ── */
+.building-scene{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px}
+.bld-spinner{width:32px;height:32px;border:2.5px solid #1e2d45;border-top-color:#3b82f6;border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.bld-sources{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.bld-src{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:8px;background:#1a2236;border:1px solid #1e2d45;color:#4a5b77;opacity:0;transform:scale(.85);transition:all .3s ease}
+.bld-src.in{opacity:1;transform:scale(1)}
+.bld-steps{display:flex;flex-direction:column;gap:6px;width:100%;max-width:300px}
+.bst{display:flex;align-items:center;gap:8px;font-size:11px;color:#4a5b77;font-family:'DM Mono',monospace;transition:color .3s}
+.bst.act{color:#60a5fa}.bst.done{color:#22c55e}
+.bst-dot{width:6px;height:6px;border-radius:50%;background:#1e2d45;flex-shrink:0;transition:background .3s}
+.bst.act .bst-dot{background:#3b82f6;animation:nd .9s ease-in-out infinite}.bst.done .bst-dot{background:#22c55e}
+
+/* ── SCENE: ORG CHART ── */
+.canvas-scene{flex:1;position:relative;overflow:hidden;background:#0b0f19}
+.canvas-scene::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.025) 1px,transparent 1px);background-size:22px 22px}
+#chart-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.cnode{position:absolute;width:148px;background:#111827;border:1.5px solid #1e2d45;border-radius:10px;padding:10px 11px;z-index:2;opacity:0;transform:scale(.8);transition:all .45s ease}
+.cnode.in{opacity:1;transform:scale(1)}
+.cnode.sel{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15)}
+.cnode.gn{border-color:rgba(34,197,94,.35)}.cnode.yn{border-color:rgba(245,158,11,.35)}.cnode.rn{border-color:rgba(239,68,68,.25)}
+.cn-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.cn-av{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:9px;flex-shrink:0}
+.av-g{background:#052e16;color:#22c55e}.av-y{background:#1c1400;color:#f59e0b}.av-r{background:#1f0707;color:#ef4444}.av-b{background:rgba(59,130,246,.12);color:#60a5fa}
+.cn-name{font-family:'Syne',sans-serif;font-weight:600;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cn-title{font-size:8px;color:#8b9ab4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.cn-bar{height:2px;background:#1e2d45;border-radius:1px;overflow:hidden;margin-top:5px}
+.cn-fill{height:100%;border-radius:1px}
+.cn-foot{display:flex;justify-content:space-between;margin-top:4px}
+.cn-tag{font-size:7px;font-family:'DM Mono',monospace;padding:1px 4px;border-radius:3px}
+.cn-touch{font-family:'DM Mono',monospace;font-size:7px;color:#4a5b77}
+.cedge{stroke:#1e2d45;stroke-width:1.5;fill:none;stroke-dasharray:4 3;opacity:.7;stroke-dashoffset:0;animation:edgedash 3s linear infinite}
+@keyframes edgedash{to{stroke-dashoffset:-28}}
+.cedge-sel{stroke:#3b82f6;opacity:.8;stroke-dasharray:none;animation:none}
+
+/* ── DETAIL PANEL ── */
+.detail-panel{position:absolute;right:0;top:0;bottom:0;width:220px;background:#111827;border-left:1px solid #1e2d45;z-index:5;display:flex;flex-direction:column;opacity:0;transform:translateX(20px);transition:all .4s ease}
+.detail-panel.in{opacity:1;transform:translateX(0)}
+.dp-tabs{display:flex;border-bottom:1px solid #1e2d45;flex-shrink:0}
+.dp-tab{flex:1;padding:8px 2px;text-align:center;font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.8px;color:#4a5b77;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.dp-tab.dt{color:#60a5fa;border-bottom-color:#3b82f6}
+.dp-hero{padding:12px 12px 10px;border-bottom:1px solid #1e2d45}
+.dp-av{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;margin-bottom:6px}
+.dp-name{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#e2e8f0}
+.dp-title{font-size:10px;color:#8b9ab4;margin-top:2px}
+.dp-badge{display:inline-block;padding:2px 7px;border-radius:8px;font-size:8px;font-family:'DM Mono',monospace;margin-top:4px;background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.2)}
+.dp-row{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-bottom:1px solid #1e2d45;font-size:11px}
+.dp-lbl{color:#4a5b77;font-family:'DM Mono',monospace;font-size:9px;text-transform:uppercase}
+.dp-val{font-weight:500;color:#e2e8f0}
+.dp-stats{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.dp-stat{padding:9px 12px;border-right:1px solid #1e2d45;border-bottom:1px solid #1e2d45}
+.dp-stat:nth-child(even){border-right:none}
+.dp-stat-v{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;letter-spacing:-.5px}
+.dp-stat-l{font-size:9px;color:#4a5b77;font-family:'DM Mono',monospace;margin-top:1px}
+
+/* ── DISCOVER PANE ── */
+.disc-pane{padding:12px;flex:1;overflow:hidden}
+.disc-header{font-family:'DM Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#4a5b77;margin-bottom:8px}
+.disc-q-list{display:flex;flex-direction:column;gap:7px}
+.disc-q{display:flex;gap:7px;font-size:10px;line-height:1.5;color:#8b9ab4;opacity:0;transform:translateY(5px);transition:all .35s ease}
+.disc-q.in{opacity:1;transform:translateY(0)}
+.disc-num{color:#3b82f6;font-family:'DM Mono',monospace;font-size:9px;flex-shrink:0;margin-top:1px}
+.disc-q-copy{flex-shrink:0;width:18px;height:18px;background:rgba(59,130,246,.1);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#60a5fa;margin-left:auto;font-size:9px}
+.disc-context{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:7px;padding:7px 9px;margin-bottom:9px;font-size:9px;color:#60a5fa;font-family:'DM Mono',monospace;display:flex;gap:6px;align-items:center}
+
+/* ── INSIGHTS MODAL ── */
+.insights-modal-demo{background:#111827;border:1px solid #253550;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.6);width:min(400px,90%);overflow:hidden;opacity:0;transform:scale(.95) translateY(10px);transition:all .35s ease}
+.insights-modal-demo.in{opacity:1;transform:scale(1) translateY(0)}
+.im-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid #1e2d45}
+.im-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#e2e8f0;display:flex;align-items:center;gap:7px}
+.im-body{padding:12px 16px}
+.cov-row{display:flex;align-items:center;gap:12px;background:#1a2236;border:1px solid #1e2d45;border-radius:9px;padding:10px 12px;margin-bottom:10px}
+.cov-ring-wrap{width:44px;height:44px;position:relative;flex-shrink:0}
+.cov-ring-wrap svg{width:44px;height:44px;transform:rotate(-90deg)}
+.cov-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px}
+.cov-score-label{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#e2e8f0}
+.cov-score-sub{font-size:10px;color:#8b9ab4;margin-top:2px}
+.alert-item{display:flex;align-items:flex-start;gap:9px;padding:8px 10px;border-radius:8px;margin-bottom:5px;border:1px solid transparent;border-left-width:3px;opacity:0;transform:translateX(-6px);transition:all .35s ease}
+.alert-item.in{opacity:1;transform:translateX(0)}
+.ai-crit{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.12);border-left-color:#ef4444}
+.ai-warn{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.12);border-left-color:#f59e0b}
+.ai-good{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.12);border-left-color:#22c55e}
+.aidot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.ai-crit .aidot{background:#ef4444}.ai-warn .aidot{background:#f59e0b}.ai-good .aidot{background:#22c55e}
+.ai-txt{flex:1}.ai-title{font-size:11px;font-weight:500;color:#e2e8f0}.ai-sub{font-size:9px;color:#8b9ab4;margin-top:2px;font-family:'DM Mono',monospace}
+
+/* ── OUTRO ── */
+#s-outro{background:radial-gradient(ellipse at center,#0f1728,#050810);align-items:center;justify-content:center;text-align:center;gap:16px}
+.outro-url{font-family:'DM Mono',monospace;font-size:clamp(14px,3vw,22px);color:#60a5fa;opacity:0;transition:opacity .6s ease;letter-spacing:1px}
+.outro-url.in{opacity:1}
+.outro-cta{padding:12px 28px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:clamp(12px,2vw,16px);cursor:pointer;opacity:0;transform:translateY(8px);transition:all .5s ease .2s;box-shadow:0 0 30px rgba(59,130,246,.35)}
+.outro-cta.in{opacity:1;transform:translateY(0)}
+.outro-tagline{font-size:clamp(11px,1.8vw,15px);color:#4a5b77;font-family:'DM Mono',monospace;opacity:0;transition:opacity .5s ease .4s}
+.outro-tagline.in{opacity:1}
+
+/* ── CALLOUT ── */
+.callout{position:absolute;background:rgba(59,130,246,.92);border:1px solid rgba(96,165,250,.4);backdrop-filter:blur(8px);border-radius:8px;padding:5px 12px;font-size:11px;font-family:'DM Mono',monospace;color:#fff;z-index:30;white-space:nowrap;pointer-events:none;opacity:0;transform:translateY(4px);transition:all .3s ease;max-width:220px;white-space:normal;text-align:center;line-height:1.4;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.callout.in{opacity:1;transform:translateY(0)}
+.callout.green{background:rgba(34,197,94,.9);border-color:rgba(74,222,128,.4);box-shadow:0 4px 20px rgba(34,197,94,.25)}
+
+/* ── CONTROLS ── */
+.controls{height:40px;background:#0d111e;border-top:1px solid #1a2540;display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0}
+.play-btn{height:28px;border-radius:6px;background:#1a2236;border:1px solid #253550;color:#60a5fa;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;flex-shrink:0;transition:all .15s;padding:0 8px;min-width:28px}
+.play-btn:hover{background:#253550}
+.progress-wrap{flex:1;height:4px;background:#1a2236;border-radius:2px;cursor:pointer;position:relative}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:2px;transition:width .1s linear;width:0%}
+.progress-thumb{position:absolute;top:50%;right:0;transform:translateY(-50%) translateX(50%);width:10px;height:10px;background:#60a5fa;border-radius:50%;box-shadow:0 0 6px rgba(96,165,250,.6)}
+.chapters{display:flex;gap:4px;flex-shrink:0}
+.ch{padding:3px 8px;border-radius:4px;background:#1a2236;font-family:'DM Mono',monospace;font-size:8px;color:#4a5b77;cursor:pointer;transition:all .15s;border:1px solid #1e2d45}
+.ch:hover{color:#60a5fa;border-color:#253550}
+.ch.ch-act{background:#1e3a5f;color:#60a5fa;border-color:rgba(59,130,246,.3)}
+.time-display{font-family:'DM Mono',monospace;font-size:10px;color:#4a5b77;flex-shrink:0;min-width:40px;text-align:right}
+
+/* ── SCENE LABEL BADGE ── */
+.scene-badge{position:absolute;top:10px;left:10px;background:rgba(11,15,25,.8);border:1px solid #1e2d45;border-radius:6px;padding:3px 9px;font-family:'DM Mono',monospace;font-size:9px;color:#4a5b77;z-index:25;backdrop-filter:blur(4px);opacity:0;transition:opacity .3s}
+.scene-badge.in{opacity:1}
+
+/* Cursor blink for typing */
+.cursor{display:inline-block;width:1px;height:13px;background:#e2e8f0;margin-left:1px;vertical-align:middle;animation:cb .7s step-end infinite}
+@keyframes cb{0%,100%{opacity:1}50%{opacity:0}}
+
+@keyframes edgedraw{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+.cedge-draw{stroke-dasharray:200;animation:edgedraw .6s ease forwards}
+</style>
+
+/* ── RECORDING PROMPT OVERLAY ── */
+.rec-prompt{position:absolute;inset:0;background:rgba(5,8,15,.94);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;backdrop-filter:blur(10px);padding:28px;text-align:center}
+.rp-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(22px,4vw,36px);color:#eef2ff;display:flex;align-items:center;gap:10px}
+.rp-tag{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:2px;padding:5px 14px;border-radius:20px}
+.rp-tag-blue{color:#60a5fa;border:1px solid rgba(59,130,246,.35);background:rgba(59,130,246,.06)}
+.rp-tag-amber{color:#fbbf24;border:1px solid rgba(245,158,11,.35);background:rgba(245,158,11,.06)}
+.rp-sub{font-size:clamp(13px,1.8vw,16px);color:#8b9ab4;max-width:430px;line-height:1.7}
+.rp-card{background:#111827;border:1px solid #1e2d45;border-radius:13px;padding:18px 22px;max-width:400px;text-align:left}
+.rp-card-lbl{font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#4a5b77;margin-bottom:12px}
+.rp-steps{display:flex;flex-direction:column;gap:9px;font-size:13px;color:#8b9ab4}
+.rp-step{display:flex;gap:10px;align-items:flex-start}
+.rp-n{color:#3b82f6;font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;margin-top:2px}
+.rp-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.rp-btn-primary{padding:13px 26px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s}
+.rp-btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+.rp-btn-ghost{padding:13px 20px;background:transparent;color:#8b9ab4;border:1px solid #1e2d45;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer}
+.rp-drop{border:1.5px dashed #1e2d45;border-radius:10px;padding:12px 24px;font-family:'DM Mono',monospace;font-size:10px;color:#4a5b77;cursor:pointer;transition:all .2s}
+.rp-drop:hover{border-color:#3b82f6;color:#60a5fa}
+.rp-note{font-size:11px;color:#3d4f72;font-family:'DM Mono',monospace}
+/* extra node variants */
+.cnode.pulse-alert{animation:nodeAlert 1.4s ease-in-out infinite}
+@keyframes nodeAlert{0%,100%{border-color:rgba(239,68,68,.25)}50%{border-color:rgba(239,68,68,.7);box-shadow:0 0 8px rgba(239,68,68,.25)}}
+.dp-badge-red{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25);display:inline-block;padding:2px 7px;border-radius:8px;font-size:8px;font-family:'DM Mono',monospace;margin-top:4px}
+.dp-badge-blue{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.25);display:inline-block;padding:2px 7px;border-radius:8px;font-size:8px;font-family:'DM Mono',monospace;margin-top:4px}
+.dp-badge-amber{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.25);display:inline-block;padding:2px 7px;border-radius:8px;font-size:8px;font-family:'DM Mono',monospace;margin-top:4px}
+.dp-alert-box{margin:10px 12px;padding:9px 10px;border-radius:8px}
+.dp-alert-box.r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-left:3px solid #ef4444}
+.dp-alert-box.g{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-left:3px solid #22c55e}
+.dp-alert-title{font-size:11px;font-weight:500;color:#e2e8f0}
+.dp-alert-sub{font-size:9px;color:#8b9ab4;margin-top:3px;font-family:'DM Mono',monospace}
+
+</head>
+<body>
+<div class="player">
+  <div class="chrome">
+    <div class="dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+    <div class="url-bar" id="url-bar">threadmap.io</div>
+    <div class="chrome-right"><span class="chrome-tab" id="chrome-tab"></span></div>
+  </div>
+  <div class="scenes" id="scenes-wrap">
+
+  <!-- S0: INTRO -->
+  <div class="scene" id="s0">
+    <div style="height:100%;background:radial-gradient(ellipse at center,#0f1728,#050810);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px">
+      <div class="intro-logo" id="il"><div class="intro-dot"></div>ThreadMapr</div>
+      <div class="intro-tag" id="it" style="color:#22c55e;letter-spacing:2px">Account Planning</div>
+      <div class="intro-sub" id="is">A rep just got assigned Palo Alto Networks. No history, no contacts. Here's how they build the buying group from scratch.</div>
+    </div>
+  </div>
+
+  <!-- S1: ACCOUNTS HOME -->
+  <div class="scene" id="s1">
+    <div class="app-shell">
+      <div class="app-header">
+        <div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div>
+        <div class="ah-div"></div><div class="ah-label">Accounts</div>
+        <div class="ah-right">
+          <button class="ah-btn ah-btn-ghost" style="font-size:10px">Search</button>
+          <button class="ah-btn ah-btn-primary" style="font-size:10px" id="s1-newbtn">+ New Account</button>
+        </div>
+      </div>
+      <div class="accounts-body">
+        <div class="pipe-bar">
+          <div class="pipe-stat"><div class="pipe-num">$2.4M</div><div class="pipe-lbl">Pipeline</div></div>
+          <div class="pipe-stat"><div class="pipe-num">1</div><div class="pipe-lbl">Active Account</div></div>
+          <div class="pipe-stat"><div class="pipe-num" style="color:#f59e0b">3</div><div class="pipe-lbl">Critical Gaps</div></div>
+          <div class="pipe-stat"><div class="pipe-num" style="color:#22c55e">51%</div><div class="pipe-lbl">Avg Coverage</div></div>
+        </div>
+        <div class="gbu-sec">
+          <div class="gbu-hdr"><div class="gbu-lbl">GBU · Executive &amp; C-Suite</div><div class="gbu-rule"></div><div class="gbu-cnt">1 account</div></div>
+          <div class="acct-grid">
+            <div class="ac" id="ac-lfg">
+              <div class="ac-top">
+                <div class="ac-av" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);color:#60a5fa">LF</div>
+                <div class="ac-info"><div class="ac-name">Lincoln Financial Group</div><div class="ac-sub"><span class="ac-ticker">NYSE: LNC</span><span class="ac-stage stage-ev">Evaluation</span><span class="ac-level lv2">L2·CRM</span></div></div>
+                <div class="ac-ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="14" fill="none" stroke="#1e2d45" stroke-width="3.5"/><circle cx="18" cy="18" r="14" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="87.9" stroke-dashoffset="44"/></svg><div class="rv" style="color:#f59e0b;font-size:8px">50%</div></div>
+              </div>
+              <div class="ac-stats">
+                <div class="acs"><div class="acs-v" style="color:#22c55e;font-size:12px">$2.4M</div><div class="acs-l">Opp</div></div>
+                <div class="acs"><div class="acs-v">8</div><div class="acs-l">Contacts</div></div>
+                <div class="acs"><div class="acs-v" style="color:#ef4444">3</div><div class="acs-l">Dark</div></div>
+              </div>
+              <div class="ac-actions"><div class="ac-btn">Open</div><div class="ac-btn">Insights</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="gbu-sec" style="margin-top:14px">
+          <div class="gbu-hdr"><div class="gbu-lbl">GBU · Technology &amp; Operations</div><div class="gbu-rule"></div><div class="gbu-cnt">0 accounts</div></div>
+          <div style="border:1.5px dashed #1e2d45;border-radius:10px;padding:22px;text-align:center;font-family:'DM Mono',monospace;font-size:12px;color:#4a5b77" id="s1-placeholder">+ New account assigned — Palo Alto Networks</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" id="co-s1" style="bottom:50px">I just got a new account. No history. Starting from zero.</div>
+  </div>
+
+  <!-- S2: BUILD MODAL -->
+  <div class="scene" id="s2">
+    <div class="app-shell">
+      <div class="app-header"><div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div><div class="ah-div"></div><div class="ah-label">Accounts</div><div class="ah-right"><button class="ah-btn ah-btn-primary" style="font-size:10px">+ New Account</button></div></div>
+      <div style="flex:1;background:rgba(8,11,18,.8)"></div>
+    </div>
+    <div class="modal-overlay-demo">
+      <div class="demo-modal" id="s2-modal">
+        <div class="dm-hdr"><div class="dm-title"><div style="width:10px;height:10px;background:#3b82f6;border-radius:50%"></div>New Account</div></div>
+        <div class="dm-tabs"><div class="dm-tab dt-act">⚡ Auto-Build from Web</div><div class="dm-tab">+ Manual Entry</div></div>
+        <div class="dm-body">
+          <div class="lm-strip">
+            <div class="lm-c lm1c lm-act"><div class="lmn">Level 1</div><div class="lmt">Public Data</div><div class="lms">Web · LI · Press</div></div>
+            <div class="lm-c lm2c" style="opacity:.4"><div class="lmn">Level 2</div><div class="lmt">CRM Sync</div><div class="lms">SFDC · HubSpot</div></div>
+            <div class="lm-c lm3c" style="opacity:.4"><div class="lmn">Level 3</div><div class="lmt">Enrichment</div><div class="lms">Clay · Apollo</div></div>
+          </div>
+          <div class="dm-form-lbl">Target Account</div>
+          <div class="dm-input-row">
+            <div class="dm-input focus" id="s2-input">Palo Alto Networks<span class="cursor"></span></div>
+            <button class="dm-btn" id="s2-go">Build →</button>
+          </div>
+          <div class="dm-note">Level 1 pulls publicly available info — no CRM required.</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout green" id="co-s2" style="bottom:50px">Level 1 — public data only. No integrations.</div>
+  </div>
+
+  <!-- S3: BUILDING -->
+  <div class="scene" id="s3">
+    <div class="app-shell">
+      <div class="app-header"><div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div><div class="ah-div"></div><div class="ah-label" style="color:#60a5fa">Building Palo Alto Networks…</div></div>
+      <div class="building-scene">
+        <div class="bld-spinner"></div>
+        <div class="bld-sources">
+          <div class="bld-src" id="bs0">paloaltonetworks.com</div>
+          <div class="bld-src" id="bs1">LinkedIn</div>
+          <div class="bld-src" id="bs2">Crunchbase</div>
+          <div class="bld-src" id="bs3">Press releases</div>
+          <div class="bld-src" id="bs4">SEC filings</div>
+        </div>
+        <div class="bld-steps">
+          <div class="bst" id="bst0"><div class="bst-dot"></div>Searching Palo Alto Networks leadership…</div>
+          <div class="bst" id="bst1"><div class="bst-dot"></div>Scanning LinkedIn company profiles…</div>
+          <div class="bst" id="bst2"><div class="bst-dot"></div>Parsing executive titles and structure…</div>
+          <div class="bst" id="bst3"><div class="bst-dot"></div>Inferring reporting hierarchy…</div>
+          <div class="bst" id="bst4"><div class="bst-dot"></div>Building org chart…</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" id="co-s3" style="bottom:50px">Searching 5 public sources — no integrations needed</div>
+  </div>
+
+  <!-- S4: ORG CHART (all dark) -->
+  <div class="scene" id="s4">
+    <div class="app-shell">
+      <div class="app-header">
+        <div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div><div class="ah-div"></div>
+        <button class="ah-back">← Accounts</button><div class="ah-div"></div>
+        <span class="ah-acct-name">Palo Alto Networks</span>
+        <span class="ah-badge" style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#22c55e">L1 · Public</span>
+        <div class="ah-right"><button class="ah-btn ah-btn-ghost" style="font-size:10px">Arrange</button></div>
+      </div>
+      <div class="canvas-scene" id="canvas-s4"><svg id="svg-s4" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></svg></div>
+    </div>
+    <div class="callout" id="co-s4" style="bottom:50px;background:rgba(239,68,68,.85);border-color:rgba(239,68,68,.4)">7 executives mapped — all dark. No prior engagement.</div>
+  </div>
+
+  <!-- S5: CEO DETAIL + DISCOVER -->
+  <div class="scene" id="s5">
+    <div class="app-shell">
+      <div class="app-header">
+        <div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div><div class="ah-div"></div>
+        <button class="ah-back">← Accounts</button><div class="ah-div"></div>
+        <span class="ah-acct-name">Palo Alto Networks</span>
+        <span class="ah-badge" style="background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:#22c55e">L1 · Public</span>
+      </div>
+      <div class="canvas-scene" id="canvas-s5">
+        <svg id="svg-s5" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1"></svg>
+        <div class="detail-panel" id="dp-s5">
+          <div class="dp-tabs">
+            <div class="dp-tab dt" id="dpt-s5-det">Detail</div>
+            <div class="dp-tab" id="dpt-s5-disc">Discover</div>
+            <div class="dp-tab">CRM</div><div class="dp-tab">Seq</div>
+          </div>
+          <div id="dp-s5-det-pane">
+            <div class="dp-hero">
+              <div class="dp-av av-r">NA</div>
+              <div class="dp-name">Nikesh Arora</div>
+              <div class="dp-title">Chairman &amp; CEO</div>
+              <div class="dp-badge-blue">Economic Buyer</div>
+            </div>
+            <div class="dp-stats">
+              <div class="dp-stat"><div class="dp-stat-v" style="color:#ef4444">0</div><div class="dp-stat-l">Interactions</div></div>
+              <div class="dp-stat"><div class="dp-stat-v" style="color:#ef4444">Never</div><div class="dp-stat-l">Last Touch</div></div>
+            </div>
+            <div class="dp-row"><span class="dp-lbl">Source</span><span class="dp-val" style="color:#22c55e">LinkedIn</span></div>
+            <div class="dp-row"><span class="dp-lbl">Dept</span><span class="dp-val">Executive</span></div>
+            <div class="dp-alert-box r">
+              <div class="dp-alert-title">First time in this account</div>
+              <div class="dp-alert-sub">Needs warm intro — start with CTO Nir Zuk as champion path</div>
+            </div>
+          </div>
+          <div id="dp-s5-disc-pane" style="display:none">
+            <div class="disc-pane">
+              <div class="disc-context"><svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>CEO · Economic Buyer · Never Contacted</div>
+              <div class="disc-header">Opening Questions</div>
+              <div class="disc-q-list">
+                <div class="disc-q" id="dq-s5-0"><div class="disc-num">1</div><span>You've built Palo Alto into the platform consolidation play — where does AI-led threat response fit in your roadmap over the next 18 months?</span></div>
+                <div class="disc-q" id="dq-s5-1"><div class="disc-num">2</div><span>What's your biggest frustration with how current vendors are handling the shift to autonomous security operations?</span></div>
+                <div class="disc-q" id="dq-s5-2"><div class="disc-num">3</div><span>When you think about the next major platform consolidation decision, who in your org drives that conversation forward?</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" id="co-s5" style="bottom:50px">Economic Buyer — never touched. ThreadMapr shows the opening angle.</div>
+  </div>
+
+  <!-- S6: INSIGHTS (0% coverage) -->
+  <div class="scene" id="s6">
+    <div class="app-shell">
+      <div class="app-header">
+        <div class="ah-logo"><div class="ah-dot"></div>ThreadMapr</div><div class="ah-div"></div>
+        <button class="ah-back">← Accounts</button><div class="ah-div"></div>
+        <span class="ah-acct-name">Palo Alto Networks</span>
+        <div class="ah-right"><button class="ah-btn ah-btn-insights" style="font-size:10px">⚡ Insights</button></div>
+      </div>
+      <div style="flex:1;background:rgba(8,11,18,.85);display:flex;align-items:center;justify-content:center;position:relative">
+        <div class="insights-modal-demo" id="ins-s6">
+          <div class="im-hdr"><div class="im-title"><div style="width:9px;height:9px;background:#ef4444;border-radius:50%"></div>Account Insights — Palo Alto Networks</div></div>
+          <div class="im-body">
+            <div class="cov-row">
+              <div class="cov-ring-wrap"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="17" fill="none" stroke="#1e2d45" stroke-width="4.5"/><circle cx="22" cy="22" r="17" fill="none" id="cring-s6" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="106.8"/></svg><div class="cov-pct" id="cpct-s6" style="color:#ef4444">0%</div></div>
+              <div><div class="cov-score-label">No Coverage Yet</div><div class="cov-score-sub">7 contacts mapped · 0 engaged · Account is cold</div></div>
+            </div>
+            <div class="alert-item ai-crit" id="ai-s6-0"><div class="aidot"></div><div class="ai-txt"><div class="ai-title">All 7 contacts dark</div><div class="ai-sub">No prior engagement — account is completely cold</div></div></div>
+            <div class="alert-item ai-crit" id="ai-s6-1"><div class="aidot"></div><div class="ai-txt"><div class="ai-title">CEO needs a warm intro path</div><div class="ai-sub">Nikesh Arora — start via CTO or board relationship</div></div></div>
+            <div class="alert-item ai-warn" id="ai-s6-2"><div class="aidot"></div><div class="ai-txt"><div class="ai-title">CTO is best first contact</div><div class="ai-sub">Nir Zuk — technical champion path to Arora</div></div></div>
+            <div class="alert-item ai-good" id="ai-s6-3"><div class="aidot"></div><div class="ai-txt"><div class="ai-title">Org chart complete from public data</div><div class="ai-sub">7 executives mapped — ready to plan outreach sequence</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" id="co-s6" style="bottom:50px">Zero coverage — but now I have a map and a clear first move.</div>
+  </div>
+
+  <!-- S7: OUTRO -->
+  <div class="scene" id="s7" style="background:radial-gradient(ellipse at center,#0f1728,#050810);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px">
+    <div class="outro-url" id="ou-url">app.threadmap.io</div>
+    <button class="outro-cta" id="ou-cta">Get Early Access →</button>
+    <div class="outro-tagline" id="ou-tag">Walk into any new account with a real org chart and a clear first move — before your first call.</div>
+  </div>
+
+  </div>
+  <!-- Recording prompt -->
+  <div class="rec-prompt" id="rec-prompt">
+    <div class="rp-logo"><div style="width:9px;height:9px;background:#3b82f6;border-radius:50%;animation:nd 2s infinite"></div>ThreadMapr</div>
+    <div class="rp-tag rp-tag-blue">Demo 1 — Account Planning</div>
+    <p class="rp-sub">A rep just got assigned Palo Alto Networks. No history, no contacts. Watch how they build the full buying group from public data in under 90 seconds.</p>
+    <div class="rp-card">
+      <div class="rp-card-lbl">To record as MP4 with Siri voice</div>
+      <div class="rp-steps">
+        <div class="rp-step"><span class="rp-n">1.</span>iPhone: Settings → Control Center → add Screen Recording</div>
+        <div class="rp-step"><span class="rp-n">2.</span>Swipe down → tap the record button</div>
+        <div class="rp-step"><span class="rp-n">3.</span>Come back here → hit Play with Narration</div>
+        <div class="rp-step"><span class="rp-n">4.</span>Let it finish → stop recording → AirDrop your MP4</div>
+      </div>
+    </div>
+    <div class="rp-btns">
+      <button class="rp-btn-primary" onclick="startDemo(true)">▶ Play with Narration</button>
+      <button class="rp-btn-ghost" onclick="startDemo(false)">Play Silent</button>
+    </div>
+    <div class="rp-drop" id="rp-drop" ondragover="event.preventDefault();this.style.borderColor='#3b82f6'" ondragleave="this.style.borderColor=''" ondrop="handleDrop(event)">📎 Drop Voice Memos .m4a to use your own voice</div>
+    <div class="rp-note">Mac: QuickTime → New Screen Recording → select audio source → record this tab</div>
+  </div>
+  <div class="controls">
+    <button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+      <div class="progress-thumb" id="progress-thumb"></div>
+    </div>
+    <div class="chapters" id="chapters"></div>
+    <div class="time-display" id="time-disp">0:00</div>
+  </div>
+</div>
+<script>
+
+const NODES=[
+  {id:0,name:'Nikesh Arora',  title:'Chairman & CEO',           av:'NA',cls:'rn',avc:'av-r',role:'EB',x:520,y:55, fill:3, touch:'Never'},
+  {id:1,name:'Dipak Golechha',title:'Chief Financial Officer',  av:'DG',cls:'rn',avc:'av-r',role:'?', x:100,y:220,fill:3, touch:'Never'},
+  {id:2,name:'Lee Klarich',   title:'Chief Product Officer',    av:'LK',cls:'rn',avc:'av-r',role:'?', x:310,y:220,fill:3, touch:'Never'},
+  {id:3,name:'Nir Zuk',       title:'CTO & Co-Founder',         av:'NZ',cls:'rn',avc:'av-r',role:'?', x:520,y:220,fill:3, touch:'Never'},
+  {id:4,name:'Amit Singh',    title:'President, Platforms',      av:'AS',cls:'rn',avc:'av-r',role:'?', x:730,y:220,fill:3, touch:'Never'},
+  {id:5,name:'Liane Hornsey', title:'Chief People Officer',      av:'LH',cls:'rn',avc:'av-r',role:'?', x:200,y:385,fill:3, touch:'Never'},
+  {id:6,name:'BJ Jenkins',    title:'President, Go-to-Market',   av:'BJ',cls:'rn',avc:'av-r',role:'?', x:560,y:385,fill:3, touch:'Never'},
+];
+const RELS=[[0,1],[0,2],[0,3],[0,4],[3,5],[3,6]];
+
+const SCENES=[
+  {id:'s0',dur:6500, title:'Intro',    url:'threadmap.io'},
+  {id:'s1',dur:9000, title:'Accounts', url:'app.threadmap.io · Accounts'},
+  {id:'s2',dur:9500, title:'Build',    url:'app.threadmap.io · New Account'},
+  {id:'s3',dur:8500, title:'Pulling',  url:'app.threadmap.io · Building PANW…'},
+  {id:'s4',dur:10000,title:'Org Chart',url:'app.threadmap.io · Palo Alto Networks'},
+  {id:'s5',dur:14000,title:'Detail',   url:'app.threadmap.io · Palo Alto Networks'},
+  {id:'s6',dur:10000,title:'Insights', url:'app.threadmap.io · PANW · Insights'},
+  {id:'s7',dur:7000, title:'Done',     url:'threadmap.io'},
+];
+
+const NARRATION=[
+  "ThreadMapr helps reps hit the ground running on brand new accounts — with zero C-R-M data and zero prior engagement.",
+  "I just got Palo Alto Networks assigned. One existing account in my territory, but this one is completely new. No contacts, no history — just an account name.",
+  "I click New Account and go straight to Auto-Build from Web. Level one pulls from public data only — no C-R-M connection required. I'll type in Palo Alto Networks and hit Build.",
+  "ThreadMapr goes out and searches their website, LinkedIn, Crunchbase, press releases, and SEC filings. The whole thing runs automatically in seconds.",
+  "Here's my starting point. Seven Palo Alto Networks executives — automatically mapped into a real org chart. Every single one is dark because we've never touched this account. But now I know who's who and how the org is structured.",
+  "I click Nikesh Arora, the C-E-O. He's the Economic Buyer — but he's also never been contacted. ThreadMapr flags that I need a warm intro path and identifies the C-T-O as the best starting point. If I switch to Discover, I get opening questions built specifically for a cold C-E-O first touch.",
+  "Insights confirms it. Zero coverage, all seven contacts dark. But ThreadMapr already has a recommendation — start with Nir Zuk, the C-T-O, as the champion path to Arora. Now I have a plan before I've made a single call.",
+  "That's account planning with ThreadMapr. Walk into any new account with a real org chart, a mapped buying group, and a clear first move.",
+];
+const TOTAL_DUR = SCENES.reduce((s,sc)=>s+sc.dur,0);
+let curScene=-1,playing=false,elapsed=0,lastTs=null,timers=[],narOn=false,customAudio=null;
+
+function g(id){return document.getElementById(id);}
+function at(ms,fn){timers.push(setTimeout(fn,ms));}
+function cl(id,cls){const e=g(id);if(e)e.classList.add(cls);}
+function rm(id,cls){const e=g(id);if(e)e.classList.remove(cls);}
+
+// Build chapter buttons
+const chEl=g('chapters');
+SCENES.forEach((sc,i)=>{
+  const b=document.createElement('div');b.className='ch';b.textContent=sc.title;b.id=`ch-${i}`;
+  b.onclick=()=>jumpTo(i);chEl.appendChild(b);
+});
+
+function jumpTo(idx){
+  elapsed=SCENES.slice(0,idx).reduce((s,sc)=>s+sc.dur,0);
+  showScene(idx);
+}
+
+function showScene(idx){
+  timers.forEach(clearTimeout);timers=[];
+  SCENES.forEach((_,i)=>g(SCENES[i].id)?.classList.remove('active'));
+  document.querySelectorAll('.ch').forEach(c=>c.classList.remove('ch-act'));
+  curScene=idx;
+  const sc=SCENES[idx];
+  g(sc.id)?.classList.add('active');
+  g(`ch-${idx}`)?.classList.add('ch-act');
+  g('url-bar').textContent=sc.url;
+  g('chrome-tab').textContent=sc.title;
+  if(narOn) speak(idx);
+  runScene(idx);
+}
+
+function tick(ts){
+  if(lastTs&&playing){
+    elapsed+=ts-lastTs;
+    const sceneEnd=SCENES.slice(0,curScene+1).reduce((s,sc)=>s+sc.dur,0);
+    if(elapsed>=sceneEnd){
+      if(curScene<SCENES.length-1)showScene(curScene+1);
+      else{elapsed=0;showScene(0);}
+    }
+    const pct=Math.min(100,(elapsed/TOTAL_DUR)*100);
+    g('progress-fill').style.width=pct+'%';
+    const sec=Math.floor(elapsed/1000);
+    g('time-disp').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  }
+  lastTs=ts;requestAnimationFrame(tick);
+}
+
+function getBestVoice(){
+  const v=speechSynthesis.getVoices();
+  for(const p of [/samantha/i,/karen/i,/google us english/i,/aria/i,/jenny/i,/zira/i]){
+    const f=v.find(vv=>p.test(vv.name)&&vv.lang.startsWith('en'));if(f)return f;
+  }
+  return v.find(vv=>vv.lang==='en-US')||v.find(vv=>vv.lang.startsWith('en'))||null;
+}
+function speak(idx){
+  if(!narOn||!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  if(customAudio){
+    customAudio.currentTime=Math.min(SCENES.slice(0,idx).reduce((s,sc)=>s+sc.dur,0)/1000,customAudio.duration||0);
+    customAudio.play().catch(()=>{});return;
+  }
+  const txt=NARRATION[idx];if(!txt)return;
+  const utt=new SpeechSynthesisUtterance(txt);
+  const voice=getBestVoice();if(voice)utt.voice=voice;
+  utt.rate=0.91;utt.pitch=1.0;utt.volume=1.0;
+  speechSynthesis.speak(utt);
+}
+function startDemo(withNar){
+  g('rec-prompt').style.display='none';
+  playing=true;g('play-btn').textContent='⏸';
+  narOn=withNar;
+  if(narOn){speechSynthesis.getVoices();speak(curScene<0?0:curScene);}
+  if(curScene<0)showScene(0);
+}
+function togglePlay(){
+  playing=!playing;g('play-btn').textContent=playing?'⏸':'▶';
+  if(!playing&&narOn)speechSynthesis.cancel();
+  if(playing&&narOn)speak(curScene);
+}
+function handleDrop(e){
+  e.preventDefault();
+  const file=e.dataTransfer.files[0];
+  if(!file||!file.type.startsWith('audio/'))return;
+  customAudio=new Audio(URL.createObjectURL(file));
+  const dz=g('rp-drop');
+  dz.textContent=`✓ "${file.name}" — your voice loaded`;
+  dz.style.borderColor='#22c55e';dz.style.color='#22c55e';
+}
+g('progress-wrap').addEventListener('click',e=>{
+  const pct=(e.clientX-e.currentTarget.getBoundingClientRect().left)/e.currentTarget.offsetWidth;
+  elapsed=pct*TOTAL_DUR;
+  let acc=0;for(let i=0;i<SCENES.length;i++){acc+=SCENES[i].dur;if(elapsed<=acc){jumpTo(i);break;}}
+});
+if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}
+
+// ─ Node & edge helpers ───────────────────────────────────────────────────────
+const NW=148,NH=86;
+function makeNode(nd,sel=false,ho=50){
+  const el=document.createElement('div');
+  el.className=`cnode ${nd.cls}${sel?' sel':''}`;
+  el.style.cssText=`left:${nd.x}px;top:${nd.y+ho}px;touch-action:none`;
+  const roleColors={EB:'rgba(59,130,246,.12)',CH:'rgba(34,197,94,.1)',INF:'rgba(245,158,11,.08)','?':'rgba(255,255,255,.03)'};
+  const roleText={EB:'#60a5fa',CH:'#22c55e',INF:'#f59e0b','?':'#4a5b77'};
+  const fillColor=nd.cls==='gn'?'#22c55e':nd.cls==='yn'?'#f59e0b':'#ef4444';
+  const tag=`<span class="cn-tag" style="background:${roleColors[nd.role]};color:${roleText[nd.role]}">${nd.role}</span>`;
+  const touch=nd.touch||'Public';
+  const touchColor=touch==='Never'?'#ef4444':touch.includes('d')&&parseInt(touch)<=7?'#22c55e':touch.includes('d')&&parseInt(touch)<=21?'#f59e0b':'#4a5b77';
+  el.innerHTML=`<div class="cn-top"><div class="cn-av ${nd.avc}">${nd.av}</div><div style="flex:1;min-width:0"><div class="cn-name">${nd.name}</div><div class="cn-title">${nd.title}</div></div></div><div class="cn-bar"><div class="cn-fill" style="width:${nd.fill}%;background:${fillColor}"></div></div><div class="cn-foot">${tag}<span class="cn-touch" style="color:${touchColor}">${touch}</span></div>`;
+  return el;
+}
+function bezier(p0,p1,p2,p3,n=20){
+  const pts=[];
+  for(let i=0;i<=n;i++){const t=i/n;pts.push([Math.round((1-t)**3*p0[0]+3*(1-t)**2*t*p1[0]+3*(1-t)*t**2*p2[0]+t**3*p3[0]),Math.round((1-t)**3*p0[1]+3*(1-t)**2*t*p1[1]+3*(1-t)*t**2*p2[1]+t**3*p3[1])]);}
+  return pts;
+}
+function drawEdges(svgId,nodes,rels,selNode,ho=50){
+  const svg=document.getElementById(svgId);if(!svg)return;
+  svg.innerHTML=`<defs><marker id="dah${svgId}" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,.5L6,3.5L0,6.5Z" fill="rgba(37,53,80,.9)"/></marker><marker id="dahs${svgId}" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,.5L6,3.5L0,6.5Z" fill="rgba(59,130,246,.8)"/></marker></defs>`;
+  rels.forEach(([mi,ri])=>{
+    const m=nodes[mi],r=nodes[ri];
+    const x1=m.x+NW/2,y1=m.y+ho+NH,x2=r.x+NW/2,y2=r.y+ho,my=(y1+y2)/2;
+    const sel=selNode===mi||selNode===ri;
+    const pts=bezier([x1,y1],[x1,my],[x2,my],[x2,y2]);
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d','M '+pts.map(p=>p.join(' ')).join(' L '));
+    p.setAttribute('stroke',sel?'rgba(59,130,246,.75)':'rgba(37,53,80,.8)');
+    p.setAttribute('stroke-width',sel?'1.5':'1.2');
+    p.setAttribute('fill','none');
+    if(!sel)p.setAttribute('stroke-dasharray','4 3');
+    p.setAttribute('marker-end',`url(#${sel?`dahs${svgId}`:`dah${svgId}`})`);
+    svg.appendChild(p);
+  });
+}
+function buildChartIn(canvasId,svgId,nodes,rels,selNode,delayBase=150){
+  const canvas=document.getElementById(canvasId);if(!canvas)return;
+  canvas.querySelectorAll('.cnode').forEach(e=>e.remove());
+  canvas.querySelectorAll('svg').forEach(e=>e.remove());
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('id',svgId);svg.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1';
+  canvas.appendChild(svg);
+  nodes.forEach((nd,i)=>{
+    const el=makeNode(nd,nd.id===selNode);
+    canvas.appendChild(el);
+    at(delayBase+i*110,()=>el.classList.add('in'));
+  });
+  at(delayBase+nodes.length*110+100,()=>drawEdges(svgId,nodes,rels,selNode));
+}
+function calloutShow(id,delay=1200){at(delay,()=>g(id)?.classList.add('in'));}
+function calloutHide(id,dur){at(dur-1000,()=>g(id)?.classList.remove('in'));}
+
+showScene(0);
+requestAnimationFrame(tick);
+
+function runScene(idx){
+  const n=SCENES[idx].dur;
+  if(idx===0){
+    at(100,()=>cl('il','in')); at(400,()=>cl('it','in')); at(700,()=>cl('is','in'));
+  } else if(idx===1){
+    at(200,()=>cl('ac-lfg','in'));
+    at(1200,()=>{g('s1-placeholder').style.borderColor='#3b82f6';g('s1-placeholder').style.color='#60a5fa';});
+    at(1800,()=>cl('co-s1','in')); at(n-1000,()=>rm('co-s1','in'));
+    at(n-700,()=>{ const b=g('s1-newbtn'); if(b)b.style.background='#1d4ed8'; });
+  } else if(idx===2){
+    at(200,()=>cl('s2-modal','in')); at(800,()=>cl('co-s2','in')); at(n-1200,()=>rm('co-s2','in'));
+    at(n-1000,()=>{ const b=g('s2-go'); if(b){b.style.background='#1d4ed8';} });
+  } else if(idx===3){
+    ['bs0','bs1','bs2','bs3','bs4'].forEach((id,i)=>at(300+i*500,()=>cl(id,'in')));
+    [[0,.12],[1,.27],[2,.43],[3,.59],[4,.75]].forEach(([i,p])=>{
+      at(p*n,()=>{document.querySelectorAll('.bst').forEach(e=>e.classList.remove('act'));
+        g(`bst${i}`)?.classList.add('act');if(i>0)g(`bst${i-1}`)?.classList.add('done');});
+    });
+    at(500,()=>cl('co-s3','in')); at(n-1000,()=>rm('co-s3','in'));
+  } else if(idx===4){
+    buildChartIn('canvas-s4','svg-s4',NODES,RELS,null,150);
+    at(2000,()=>cl('co-s4','in')); at(n-1000,()=>rm('co-s4','in'));
+  } else if(idx===5){
+    buildChartIn('canvas-s5','svg-s5',NODES,RELS,0,0);
+    at(400,()=>cl('dp-s5','in')); at(800,()=>cl('co-s5','in'));
+    const sw=Math.floor(n*0.54);
+    at(sw,()=>{
+      rm('co-s5','in');
+      g('dp-s5-det-pane').style.display='none'; g('dp-s5-disc-pane').style.display='block';
+      g('dpt-s5-det').classList.remove('dt'); g('dpt-s5-disc').classList.add('dt');
+      at(400,()=>cl('dq-s5-0','in')); at(1000,()=>cl('dq-s5-1','in')); at(1700,()=>cl('dq-s5-2','in'));
+    });
+  } else if(idx===6){
+    at(200,()=>cl('ins-s6','in'));
+    at(500,()=>{const ring=g('cring-s6'),pct=g('cpct-s6');let p=0;const iv=setInterval(()=>{
+      p=Math.min(p+1,8); if(ring)ring.setAttribute('stroke-dashoffset',106.8*(1-p/100)); if(pct)pct.textContent=p+'%'; if(p>=8)clearInterval(iv);},35);});
+    at(900,()=>cl('ai-s6-0','in')); at(1400,()=>cl('ai-s6-1','in')); at(1900,()=>cl('ai-s6-2','in')); at(2400,()=>cl('ai-s6-3','in'));
+    at(1200,()=>cl('co-s6','in')); at(n-1000,()=>rm('co-s6','in'));
+  } else if(idx===7){
+    at(200,()=>cl('ou-url','in')); at(500,()=>cl('ou-cta','in')); at(800,()=>cl('ou-tag','in'));
+  }
+}
+
+</script>
+</body>
+</html>
