@@ -187,7 +187,7 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:36px
   </div>
   <div class="nav-right">
     <a class="btn btn-ghost" href="login.html">Sign In</a>
-    <a class="btn btn-primary" href="#request">Request Access</a>
+    <a class="btn btn-primary" href="login.html">Request Access</a>
   </div>
 </nav>
 
@@ -432,9 +432,11 @@ function ctaSub(){
     setTimeout(() => document.getElementById('cta-em').style.borderColor = '', 2000);
     return;
   }
-  document.querySelector('.cta-form').innerHTML = '<div style="padding:14px 24px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:15px;display:flex;align-items:center;gap:10px"><svg width=\'16\' height=\'16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\' stroke-width=\'2.5\'><path d=\'M20 6L9 17l-5-5\'/></svg>You\'re on the list — we\'ll be in touch.</div>';
+  // Show confirmation then redirect to login
+  document.querySelector('.cta-form').innerHTML = '<div style="padding:14px 24px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;color:#4ade80;font-size:15px;display:flex;align-items:center;gap:10px"><svg width=\'16\' height=\'16\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\' stroke-width=\'2.5\'><path d=\'M20 6L9 17l-5-5\'/></svg>Access granted — taking you in...</div>';
   const note = document.getElementById('cta-note');
   if(note) note.style.display = 'none';
+  setTimeout(() => { window.location.href = 'login.html'; }, 1200);
 }
 
 // Scroll reveal — make all .reveal sections visible as they enter viewport
