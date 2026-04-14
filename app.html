@@ -651,7 +651,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.1</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.2</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -980,7 +980,10 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <script>
 // ── SELLER PROFILE — declared early so all functions can access it ──
-// (sellerProfile declared at top of script)
+var PROFILE_KEY='threadmapr_seller_profile';
+var DEFAULT_PROFILE={companyWebsite:'',companyName:'',products:[],personas:[],minTitle:'VP and above',customPersonas:'',firstTarget:'',setupComplete:false};
+var sellerProfile={companyWebsite:'',companyName:'',products:[],personas:[],minTitle:'VP and above',customPersonas:'',firstTarget:'',setupComplete:false};
+var onboardStep=0;
 
 function getSellerContext(){
   if(!sellerProfile||!sellerProfile.setupComplete)return '';
@@ -989,6 +992,166 @@ function getSellerContext(){
   return 'SELLER CONTEXT: The sales rep works at '+sellerProfile.companyName+' and sells '+products+' to financial services companies. Their typical buying group includes: '+personas+'. Minimum title level: '+sellerProfile.minTitle+'. Prioritize these roles when building the org chart and assigning economic_buyer/champion/influencer roles. ';
 }
 
+
+var ONBOARD_STEPS=[
+  {
+    eyebrow:'Step 1 of 5 — Your Company',
+    title:'Where do you work?',
+    sub:'ThreadMapr tailors every org chart to your product and the buyers who care about it.',
+    render:()=>`
+      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">Company name</label>
+      <input class="onboard-input" id="ob-coname" placeholder="e.g. Salesforce" value="${sellerProfile.companyName}"/>
+      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px;margin-top:4px">Company website</label>
+      <input class="onboard-input" id="ob-website" placeholder="e.g. salesforce.com" value="${sellerProfile.companyWebsite}"/>`,
+    validate:()=>{
+      const n=document.getElementById('ob-coname')?.value.trim();
+      const w=document.getElementById('ob-website')?.value.trim();
+      if(!n||!w){showToast('Enter your company name and website');return false;}
+      sellerProfile.companyName=n;sellerProfile.companyWebsite=w;return true;
+    }
+  },
+  {
+    eyebrow:'Step 2 of 5 — What You Sell',
+    title:'What products do you sell?',
+    sub:'Select all that apply. This shapes which executives ThreadMapr flags as your Economic Buyers and Champions.',
+    render:()=>{
+      const prods=['CRM / Sales Cloud','Service Cloud','Marketing Cloud','Data Cloud','Financial Services Cloud','Revenue Intelligence','CPQ / Billing','MuleSoft / Integration','Tableau / Analytics','Slack / Collaboration','Industry Cloud','Platform / AppExchange'];
+      return `<div class="onboard-tag-row">${prods.map(p=>`<div class="onboard-tag${sellerProfile.products.includes(p)?' sel':''}" onclick="toggleProduct('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')}</div>
+      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px;margin-top:8px">Or describe in your own words</label>
+      <input class="onboard-input" id="ob-product-custom" placeholder="e.g. AI-powered forecasting for banks" value="${sellerProfile.customPersonas||''}"/>`;
+    },
+    validate:()=>{
+      const custom=document.getElementById('ob-product-custom')?.value.trim();
+      if(!sellerProfile.products.length&&!custom){showToast('Select or describe at least one product');return false;}
+      if(custom)sellerProfile.customPersonas=custom;return true;
+    }
+  },
+  {
+    eyebrow:'Step 3 of 5 — Buying Group',
+    title:"Who's usually in your buying group?",
+    sub:'ThreadMapr prioritizes these personas in every org chart. Select all the roles that typically appear in your deals.',
+    render:()=>{
+      const personas=['CIO — Chief Information Officer','CDO — Chief Digital Officer','CFO — Chief Financial Officer','CRO — Chief Revenue Officer','COO — Chief Operating Officer','CMO — Chief Marketing Officer','CEO — Chief Executive Officer','VP Technology / Engineering','VP Digital Transformation','VP Operations & Strategy','VP Sales / Revenue Operations','Head of Data & Analytics','Head of FinTech / Innovation','Director, Enterprise Architecture','Director, Financial Technology','SVP, Core Banking Technology','Head of IT / Infrastructure'];
+      return `<div class="onboard-tag-row">${personas.map(p=>`<div class="onboard-tag${sellerProfile.personas.includes(p)?' sel sel-green':''}" onclick="togglePersona('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')}</div>`;
+    },
+    validate:()=>{if(!sellerProfile.personas.length){showToast('Select at least one persona');return false;}return true;}
+  },
+  {
+    eyebrow:'Step 4 of 5 — Seniority Floor',
+    title:'Minimum title level to map?',
+    sub:'Contacts below this level will be marked secondary. ThreadMapr will flag when critical roles at this level are missing.',
+    render:()=>{
+      const levels=['C-Suite only','EVP and above','SVP and above','VP and above','Director and above','Manager and above'];
+      return `<div class="title-chips">${levels.map(l=>`<div class="title-chip${sellerProfile.minTitle===l?' sel':''}" onclick="selectMinTitle('${l}')">${l}</div>`).join('')}</div>
+      <p style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;line-height:1.6;margin-top:12px">For enterprise FSI deals, VP and above is the right floor. C-suite deals need tighter mapping above the VP layer.</p>`;
+    },
+    validate:()=>true
+  },
+  {
+    eyebrow:'Step 5 of 5 — First Account',
+    title:"What's your first target account?",
+    sub:"Enter the company and ThreadMapr builds your first org chart right now — mapped to your buying group.",
+    render:()=>`
+      <input class="onboard-input" id="ob-target" placeholder="e.g. BlackRock, Fidelity, JP Morgan Chase" value="${sellerProfile.firstTarget||''}"/>
+      <div style="margin-top:14px;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your Profile</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.9">
+          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Company: </span>${sellerProfile.companyName}</div>
+          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Selling: </span>${sellerProfile.products.slice(0,3).join(', ')||sellerProfile.customPersonas||'—'}</div>
+          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Key personas: </span>${sellerProfile.personas.slice(0,4).map(p=>p.split('—')[0].trim()).join(', ')||'—'}${sellerProfile.personas.length>4?' +'+(sellerProfile.personas.length-4)+' more':''}</div>
+          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Min level: </span>${sellerProfile.minTitle}</div>
+        </div>
+      </div>`,
+    validate:()=>{
+      const t=document.getElementById('ob-target')?.value.trim();
+      if(!t){showToast('Enter your first target account');return false;}
+      sellerProfile.firstTarget=t;return true;
+    }
+  }
+];
+
+function renderOnboardStep(){
+  const step=ONBOARD_STEPS[onboardStep];
+  document.getElementById('ob-eyebrow').textContent=step.eyebrow;
+  document.getElementById('ob-title').textContent=step.title;
+  document.getElementById('ob-sub').textContent=step.sub;
+  document.getElementById('ob-body').innerHTML=step.render();
+  document.getElementById('ob-progress').textContent=(onboardStep+1)+' / 5';
+  const back=document.getElementById('ob-back');
+  if(back){back.style.opacity=onboardStep===0?'0':'1';back.style.pointerEvents=onboardStep===0?'none':'all';}
+  const next=document.getElementById('ob-next');
+  if(next)next.innerHTML=onboardStep===4?'Build My First Org Chart <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>':'Continue <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>';
+  [0,1,2,3,4].forEach(i=>{const d=document.getElementById('odot-'+i);if(d)d.className='onboard-dot'+(i<onboardStep?' done':i===onboardStep?' active':'');});
+}
+
+function onboardNext(){
+  if(!ONBOARD_STEPS[onboardStep].validate())return;
+  if(onboardStep===4){
+    sellerProfile.setupComplete=true;
+    localStorage.setItem(PROFILE_KEY,JSON.stringify(sellerProfile));
+    closeOnboarding();updateProfilePill();
+    setTimeout(()=>{
+      openBuildModal();
+      const inp=document.getElementById('build-co');
+      if(inp)inp.value=sellerProfile.firstTarget;
+      setTimeout(runBuildAccount,400);
+    },500);
+    return;
+  }
+  onboardStep++;renderOnboardStep();
+}
+
+function onboardBack(){if(onboardStep>0){onboardStep--;renderOnboardStep();}}
+
+function toggleProduct(p){
+  const i=sellerProfile.products.indexOf(p);
+  if(i>=0)sellerProfile.products.splice(i,1);else sellerProfile.products.push(p);
+  document.querySelectorAll('.onboard-tag').forEach(el=>{if(el.textContent.trim()===p)el.classList.toggle('sel',sellerProfile.products.includes(p));});
+}
+
+function togglePersona(p){
+  const i=sellerProfile.personas.indexOf(p);
+  if(i>=0)sellerProfile.personas.splice(i,1);else sellerProfile.personas.push(p);
+  document.querySelectorAll('.onboard-tag.sel-green, .onboard-tag').forEach(el=>{
+    if(el.textContent.trim()===p){el.classList.toggle('sel',sellerProfile.personas.includes(p));el.classList.toggle('sel-green',sellerProfile.personas.includes(p));}
+  });
+}
+
+function selectMinTitle(l){
+  sellerProfile.minTitle=l;
+  document.querySelectorAll('.title-chip').forEach(el=>el.classList.toggle('sel',el.textContent.trim()===l));
+}
+
+function openOnboarding(){
+  onboardStep=0;
+  document.getElementById('onboard-overlay').classList.add('open');
+  renderOnboardStep();
+}
+
+function closeOnboarding(){document.getElementById('onboard-overlay').classList.remove('open');}
+
+function updateProfilePill(){
+  const pill=document.getElementById('profile-pill');
+  if(!pill)return;
+  if(sellerProfile.setupComplete){
+    pill.innerHTML='<div style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div> '+sellerProfile.companyName;
+    pill.style.cssText=pill.style.cssText+'border-color:rgba(34,197,94,.25);color:var(--green);background:rgba(34,197,94,.06)';
+  }
+}
+
+// getSellerContext declared at top of script
+
+function loadSellerProfile(){
+  try{
+    const saved=localStorage.getItem(PROFILE_KEY);
+    if(saved)sellerProfile={...DEFAULT_PROFILE,...JSON.parse(saved)};
+    updateProfilePill();
+    if(!sellerProfile.setupComplete)setTimeout(openOnboarding,1000);
+  }catch(e){console.error('Profile error:',e);}
+}
+
+loadSellerProfile();
+if(speechSynth
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 let userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
@@ -2740,168 +2903,8 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ── SELLER PROFILE SYSTEM ─────────────────────────────────────────────────
-// (sellerProfile declared at top of script)
-
-const ONBOARD_STEPS=[
-  {
-    eyebrow:'Step 1 of 5 — Your Company',
-    title:'Where do you work?',
-    sub:'ThreadMapr tailors every org chart to your product and the buyers who care about it.',
-    render:()=>`
-      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">Company name</label>
-      <input class="onboard-input" id="ob-coname" placeholder="e.g. Salesforce" value="${sellerProfile.companyName}"/>
-      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px;margin-top:4px">Company website</label>
-      <input class="onboard-input" id="ob-website" placeholder="e.g. salesforce.com" value="${sellerProfile.companyWebsite}"/>`,
-    validate:()=>{
-      const n=document.getElementById('ob-coname')?.value.trim();
-      const w=document.getElementById('ob-website')?.value.trim();
-      if(!n||!w){showToast('Enter your company name and website');return false;}
-      sellerProfile.companyName=n;sellerProfile.companyWebsite=w;return true;
-    }
-  },
-  {
-    eyebrow:'Step 2 of 5 — What You Sell',
-    title:'What products do you sell?',
-    sub:'Select all that apply. This shapes which executives ThreadMapr flags as your Economic Buyers and Champions.',
-    render:()=>{
-      const prods=['CRM / Sales Cloud','Service Cloud','Marketing Cloud','Data Cloud','Financial Services Cloud','Revenue Intelligence','CPQ / Billing','MuleSoft / Integration','Tableau / Analytics','Slack / Collaboration','Industry Cloud','Platform / AppExchange'];
-      return `<div class="onboard-tag-row">${prods.map(p=>`<div class="onboard-tag${sellerProfile.products.includes(p)?' sel':''}" onclick="toggleProduct('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')}</div>
-      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px;margin-top:8px">Or describe in your own words</label>
-      <input class="onboard-input" id="ob-product-custom" placeholder="e.g. AI-powered forecasting for banks" value="${sellerProfile.customPersonas||''}"/>`;
-    },
-    validate:()=>{
-      const custom=document.getElementById('ob-product-custom')?.value.trim();
-      if(!sellerProfile.products.length&&!custom){showToast('Select or describe at least one product');return false;}
-      if(custom)sellerProfile.customPersonas=custom;return true;
-    }
-  },
-  {
-    eyebrow:'Step 3 of 5 — Buying Group',
-    title:"Who's usually in your buying group?",
-    sub:'ThreadMapr prioritizes these personas in every org chart. Select all the roles that typically appear in your deals.',
-    render:()=>{
-      const personas=['CIO — Chief Information Officer','CDO — Chief Digital Officer','CFO — Chief Financial Officer','CRO — Chief Revenue Officer','COO — Chief Operating Officer','CMO — Chief Marketing Officer','CEO — Chief Executive Officer','VP Technology / Engineering','VP Digital Transformation','VP Operations & Strategy','VP Sales / Revenue Operations','Head of Data & Analytics','Head of FinTech / Innovation','Director, Enterprise Architecture','Director, Financial Technology','SVP, Core Banking Technology','Head of IT / Infrastructure'];
-      return `<div class="onboard-tag-row">${personas.map(p=>`<div class="onboard-tag${sellerProfile.personas.includes(p)?' sel sel-green':''}" onclick="togglePersona('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')}</div>`;
-    },
-    validate:()=>{if(!sellerProfile.personas.length){showToast('Select at least one persona');return false;}return true;}
-  },
-  {
-    eyebrow:'Step 4 of 5 — Seniority Floor',
-    title:'Minimum title level to map?',
-    sub:'Contacts below this level will be marked secondary. ThreadMapr will flag when critical roles at this level are missing.',
-    render:()=>{
-      const levels=['C-Suite only','EVP and above','SVP and above','VP and above','Director and above','Manager and above'];
-      return `<div class="title-chips">${levels.map(l=>`<div class="title-chip${sellerProfile.minTitle===l?' sel':''}" onclick="selectMinTitle('${l}')">${l}</div>`).join('')}</div>
-      <p style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;line-height:1.6;margin-top:12px">For enterprise FSI deals, VP and above is the right floor. C-suite deals need tighter mapping above the VP layer.</p>`;
-    },
-    validate:()=>true
-  },
-  {
-    eyebrow:'Step 5 of 5 — First Account',
-    title:"What's your first target account?",
-    sub:"Enter the company and ThreadMapr builds your first org chart right now — mapped to your buying group.",
-    render:()=>`
-      <input class="onboard-input" id="ob-target" placeholder="e.g. BlackRock, Fidelity, JP Morgan Chase" value="${sellerProfile.firstTarget||''}"/>
-      <div style="margin-top:14px;padding:14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)">
-        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Your Profile</div>
-        <div style="font-size:12px;color:var(--text2);line-height:1.9">
-          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Company: </span>${sellerProfile.companyName}</div>
-          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Selling: </span>${sellerProfile.products.slice(0,3).join(', ')||sellerProfile.customPersonas||'—'}</div>
-          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Key personas: </span>${sellerProfile.personas.slice(0,4).map(p=>p.split('—')[0].trim()).join(', ')||'—'}${sellerProfile.personas.length>4?' +'+(sellerProfile.personas.length-4)+' more':''}</div>
-          <div><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:10px">Min level: </span>${sellerProfile.minTitle}</div>
-        </div>
-      </div>`,
-    validate:()=>{
-      const t=document.getElementById('ob-target')?.value.trim();
-      if(!t){showToast('Enter your first target account');return false;}
-      sellerProfile.firstTarget=t;return true;
-    }
-  }
-];
-
-function renderOnboardStep(){
-  const step=ONBOARD_STEPS[onboardStep];
-  document.getElementById('ob-eyebrow').textContent=step.eyebrow;
-  document.getElementById('ob-title').textContent=step.title;
-  document.getElementById('ob-sub').textContent=step.sub;
-  document.getElementById('ob-body').innerHTML=step.render();
-  document.getElementById('ob-progress').textContent=(onboardStep+1)+' / 5';
-  const back=document.getElementById('ob-back');
-  if(back){back.style.opacity=onboardStep===0?'0':'1';back.style.pointerEvents=onboardStep===0?'none':'all';}
-  const next=document.getElementById('ob-next');
-  if(next)next.innerHTML=onboardStep===4?'Build My First Org Chart <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>':'Continue <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>';
-  [0,1,2,3,4].forEach(i=>{const d=document.getElementById('odot-'+i);if(d)d.className='onboard-dot'+(i<onboardStep?' done':i===onboardStep?' active':'');});
-}
-
-function onboardNext(){
-  if(!ONBOARD_STEPS[onboardStep].validate())return;
-  if(onboardStep===4){
-    sellerProfile.setupComplete=true;
-    localStorage.setItem(PROFILE_KEY,JSON.stringify(sellerProfile));
-    closeOnboarding();updateProfilePill();
-    setTimeout(()=>{
-      openBuildModal();
-      const inp=document.getElementById('build-co');
-      if(inp)inp.value=sellerProfile.firstTarget;
-      setTimeout(runBuildAccount,400);
-    },500);
-    return;
-  }
-  onboardStep++;renderOnboardStep();
-}
-
-function onboardBack(){if(onboardStep>0){onboardStep--;renderOnboardStep();}}
-
-function toggleProduct(p){
-  const i=sellerProfile.products.indexOf(p);
-  if(i>=0)sellerProfile.products.splice(i,1);else sellerProfile.products.push(p);
-  document.querySelectorAll('.onboard-tag').forEach(el=>{if(el.textContent.trim()===p)el.classList.toggle('sel',sellerProfile.products.includes(p));});
-}
-
-function togglePersona(p){
-  const i=sellerProfile.personas.indexOf(p);
-  if(i>=0)sellerProfile.personas.splice(i,1);else sellerProfile.personas.push(p);
-  document.querySelectorAll('.onboard-tag.sel-green, .onboard-tag').forEach(el=>{
-    if(el.textContent.trim()===p){el.classList.toggle('sel',sellerProfile.personas.includes(p));el.classList.toggle('sel-green',sellerProfile.personas.includes(p));}
-  });
-}
-
-function selectMinTitle(l){
-  sellerProfile.minTitle=l;
-  document.querySelectorAll('.title-chip').forEach(el=>el.classList.toggle('sel',el.textContent.trim()===l));
-}
-
-function openOnboarding(){
-  onboardStep=0;
-  document.getElementById('onboard-overlay').classList.add('open');
-  renderOnboardStep();
-}
-
-function closeOnboarding(){document.getElementById('onboard-overlay').classList.remove('open');}
-
-function updateProfilePill(){
-  const pill=document.getElementById('profile-pill');
-  if(!pill)return;
-  if(sellerProfile.setupComplete){
-    pill.innerHTML='<div style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div> '+sellerProfile.companyName;
-    pill.style.cssText=pill.style.cssText+'border-color:rgba(34,197,94,.25);color:var(--green);background:rgba(34,197,94,.06)';
-  }
-}
-
-// getSellerContext declared at top of script
-
-function loadSellerProfile(){
-  try{
-    const saved=localStorage.getItem(PROFILE_KEY);
-    if(saved)sellerProfile={...DEFAULT_PROFILE,...JSON.parse(saved)};
-    updateProfilePill();
-    if(!sellerProfile.setupComplete)setTimeout(openOnboarding,1000);
-  }catch(e){console.error('Profile error:',e);}
-}
-
-loadSellerProfile();
-if(speechSynth&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
+// ── SELLER PROFILE (see top of script) ──
+&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
 </script>
 
 <!-- ── SELLER PROFILE ONBOARDING ────────────────────────────────────── -->
