@@ -1151,7 +1151,7 @@ function loadSellerProfile(){
 }
 
 loadSellerProfile();
-if(speechSynth
+if(speechSynth&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 let userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
@@ -1167,7 +1167,7 @@ const makeEmail=n=>n.toLowerCase().replace(/[^a-z ]/g,'').trim().split(/\s+/).fi
 const mailtoLink=(c,sub)=>`mailto:${makeEmail(c.name)}?subject=${encodeURIComponent(sub||'Following up — '+((typeof ACCOUNTS!=='undefined'&&ACCOUNTS[currentAccountId])?ACCOUNTS[currentAccountId].name:'Your Account')+' x [Your Company]')}`;
 
 // ─── DATA ──────────────────────────────────────────────────────────────────
-// Account 0 org structure — Lincoln Financial Group reporting lines
+// Account org structure
 let relationships=[
   {manager:1,report:2},
   {manager:1,report:3},
@@ -1179,7 +1179,7 @@ let relationships=[
 ];
 
 let contacts=[]
-// ─── ACCOUNT 2: Lincoln Financial — Technology & Operations ────────────────
+// ─── LEGACY DATA ───────────────────────────────────────────────────────────
 // Sourced directly from SFDC export (lfg.com contacts)
 const account2Contacts=[]
 const account2Relationships=[]
@@ -1199,8 +1199,8 @@ function showToast(msg,dur=2400){const t=document.getElementById('toast');t.text
 function showAccountsView(){
   stopSpeaking();cancelAnchor();
   // Save current account state before going back
-  if(currentAccountId>=0){
-    ACCOUNTS[currentAccountId].contacts=[...contacts];
+  if(currentAccountId>=0&&ACCOUNTS[currentAccountId]&&contacts&&contacts.length>0){
+    ACCOUNTS[currentAccountId].contacts=JSON.parse(JSON.stringify(contacts));
     ACCOUNTS[currentAccountId].relationships=[...relationships];
   }
   const av=document.getElementById('accounts-view');
@@ -2904,7 +2904,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── SELLER PROFILE (see top of script) ──
-&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
 </script>
 
 <!-- ── SELLER PROFILE ONBOARDING ────────────────────────────────────── -->
