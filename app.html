@@ -651,7 +651,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.0</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.1</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -666,7 +666,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
       New Account
     </button>
     <div class="vdiv"></div>
-    <button class="profile-pill" id="profile-pill" onclick="sellerProfile.setupComplete?openOnboarding():openOnboarding()" title="Your seller profile">
+    <button class="profile-pill" id="profile-pill" onclick="openOnboarding()" title="Your seller profile">
       <div style="width:5px;height:5px;border-radius:50%;background:var(--text3)"></div>
       <span id="profile-pill-label">Set Up Profile</span>
     </button>
@@ -979,6 +979,17 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 <div class="toast" id="toast"></div>
 
 <script>
+// ── SELLER PROFILE — declared early so all functions can access it ──
+// (sellerProfile declared at top of script)
+
+function getSellerContext(){
+  if(!sellerProfile||!sellerProfile.setupComplete)return '';
+  const products=sellerProfile.products&&sellerProfile.products.length?sellerProfile.products.join(', '):sellerProfile.customPersonas||'';
+  const personas=sellerProfile.personas?sellerProfile.personas.map(p=>p.split('—')[0].trim()).join(', '):'';
+  return 'SELLER CONTEXT: The sales rep works at '+sellerProfile.companyName+' and sells '+products+' to financial services companies. Their typical buying group includes: '+personas+'. Minimum title level: '+sellerProfile.minTitle+'. Prioritize these roles when building the org chart and assigning economic_buyer/champion/influencer roles. ';
+}
+
+
 // ─── STATE ─────────────────────────────────────────────────────────────────
 let userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
 let speechSynth=window.speechSynthesis,currentUtterance=null,aiPreviewText='';
@@ -1046,8 +1057,8 @@ function showAccountsView(){
 function openAccount(id){
   try{
     // Save current state
-    if(currentAccountId>=0&&ACCOUNTS[currentAccountId]){
-      ACCOUNTS[currentAccountId].contacts=[...contacts];
+    if(currentAccountId>=0&&ACCOUNTS[currentAccountId]&&contacts&&contacts.length){
+      ACCOUNTS[currentAccountId].contacts=JSON.parse(JSON.stringify(contacts));
       ACCOUNTS[currentAccountId].relationships=[...relationships];
     }
     currentAccountId=id;
@@ -2730,10 +2741,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── SELLER PROFILE SYSTEM ─────────────────────────────────────────────────
-const PROFILE_KEY='threadmapr_seller_profile';
-const DEFAULT_PROFILE={companyWebsite:'',companyName:'',products:[],personas:[],minTitle:'VP and above',customPersonas:'',firstTarget:'',setupComplete:false};
-let sellerProfile={...DEFAULT_PROFILE};
-let onboardStep=0;
+// (sellerProfile declared at top of script)
 
 const ONBOARD_STEPS=[
   {
@@ -2881,12 +2889,7 @@ function updateProfilePill(){
   }
 }
 
-function getSellerContext(){
-  if(!sellerProfile.setupComplete)return '';
-  const products=sellerProfile.products.length?sellerProfile.products.join(', '):sellerProfile.customPersonas;
-  const personas=sellerProfile.personas.map(p=>p.split('—')[0].trim()).join(', ');
-  return 'SELLER CONTEXT: The sales rep works at '+sellerProfile.companyName+' and sells '+products+' to financial services companies. Their typical buying group includes: '+personas+'. Minimum title level: '+sellerProfile.minTitle+'. Prioritize these roles when building the org chart and assigning economic_buyer/champion/influencer roles. ';
-}
+// getSellerContext declared at top of script
 
 function loadSellerProfile(){
   try{
