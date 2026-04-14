@@ -651,7 +651,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.2</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.3</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1154,21 +1154,21 @@ loadSellerProfile();
 if(speechSynth&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
-let userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
-let speechSynth=window.speechSynthesis,currentUtterance=null,aiPreviewText='';
-let anchorId=null; // node in connect mode for relationship creation
-let listDragId=null,listDragOverId=null,listDragPos='bottom';
-let dragging=null,dragOffset={x:0,y:0};
+var userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
+var speechSynth=window.speechSynthesis,currentUtterance=null,aiPreviewText='';
+var anchorId=null; // node in connect mode for relationship creation
+var listDragId=null,listDragOverId=null,listDragPos='bottom';
+var dragging=null,dragOffset={x:0,y:0};
 // Pointer drag state
-let pointerDragActive=false,pointerLongPressTimer=null,pointerStartPos={x:0,y:0};
+var pointerDragActive=false,pointerLongPressTimer=null,pointerStartPos={x:0,y:0};
 
 // ─── EMAIL ─────────────────────────────────────────────────────────────────
-const makeEmail=n=>n.toLowerCase().replace(/[^a-z ]/g,'').trim().split(/\s+/).filter((_,i,a)=>i===0||i===a.length-1).join('.')+'@lfg.com';
-const mailtoLink=(c,sub)=>`mailto:${makeEmail(c.name)}?subject=${encodeURIComponent(sub||'Following up — '+((typeof ACCOUNTS!=='undefined'&&ACCOUNTS[currentAccountId])?ACCOUNTS[currentAccountId].name:'Your Account')+' x [Your Company]')}`;
+var makeEmail=n=>n.toLowerCase().replace(/[^a-z ]/g,'').trim().split(/\s+/).filter((_,i,a)=>i===0||i===a.length-1).join('.')+'@lfg.com';
+var mailtoLink=(c,sub)=>`mailto:${makeEmail(c.name)}?subject=${encodeURIComponent(sub||'Following up — '+((typeof ACCOUNTS!=='undefined'&&ACCOUNTS[currentAccountId])?ACCOUNTS[currentAccountId].name:'Your Account')+' x [Your Company]')}`;
 
 // ─── DATA ──────────────────────────────────────────────────────────────────
 // Account org structure
-let relationships=[
+var relationships=[
   {manager:1,report:2},
   {manager:1,report:3},
   {manager:1,report:4},
@@ -1178,21 +1178,21 @@ let relationships=[
   {manager:6,report:7},
 ];
 
-let contacts=[]
+var contacts=[]
 // ─── LEGACY DATA ───────────────────────────────────────────────────────────
 // Sourced directly from SFDC export (lfg.com contacts)
-const account2Contacts=[]
-const account2Relationships=[]
+var account2Contacts=[]
+var account2Relationships=[]
 
 // ─── ACCOUNTS ─────────────────────────────────────────────────────────────────
-const ACCOUNTS=[];
-let currentAccountId=-1;
-const SEQUENCES=[{id:'exec',name:'Executive Outreach',steps:6,days:14,opens:'44%',reply:'19%'},{id:'champ',name:'Champion Nurture',steps:8,days:21,opens:'63%',reply:'35%'},{id:'reeng',name:'Re-engagement',steps:4,days:10,opens:'39%',reply:'22%'},{id:'cfo',name:'CFO / Finance Intro',steps:5,days:12,opens:'51%',reply:'29%'},{id:'risk',name:'Risk & Compliance',steps:4,days:10,opens:'46%',reply:'24%'}];
-let integrations={sfdc:true,outreach:true,linkedin:false};
-let nextId=1,selectedId=null,activeTab='overview',selectedSeqId=null;
-const initials=n=>n.replace(/[^a-z ]/gi,'').trim().split(/\s+/).map(p=>p[0]).join('').toUpperCase().slice(0,2);
-const ec=lt=>lt<=7?'green':lt<=30?'yellow':'red';
-const efill=lt=>lt<=7?Math.max(70,100-lt*5):lt<=30?Math.max(30,60-lt):10;
+var ACCOUNTS=[];
+var currentAccountId=-1;
+var SEQUENCES=[{id:'exec',name:'Executive Outreach',steps:6,days:14,opens:'44%',reply:'19%'},{id:'champ',name:'Champion Nurture',steps:8,days:21,opens:'63%',reply:'35%'},{id:'reeng',name:'Re-engagement',steps:4,days:10,opens:'39%',reply:'22%'},{id:'cfo',name:'CFO / Finance Intro',steps:5,days:12,opens:'51%',reply:'29%'},{id:'risk',name:'Risk & Compliance',steps:4,days:10,opens:'46%',reply:'24%'}];
+var integrations={sfdc:true,outreach:true,linkedin:false};
+var nextId=1,selectedId=null,activeTab='overview',selectedSeqId=null;
+var initials=n=>n.replace(/[^a-z ]/gi,'').trim().split(/\s+/).map(p=>p[0]).join('').toUpperCase().slice(0,2);
+var ec=lt=>lt<=7?'green':lt<=30?'yellow':'red';
+var efill=lt=>lt<=7?Math.max(70,100-lt*5):lt<=30?Math.max(30,60-lt):10;
 function showToast(msg,dur=2400){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
 
 // ─── NAVIGATION: ACCOUNTS ↔ DETAIL ──────────────────────────────────────────
@@ -1296,9 +1296,9 @@ function toggleAcctDropdown(){}
 function switchAccount(id){openAccount(id);}
 
 // ─── BUILD ACCOUNT MODAL ─────────────────────────────────────────────────────
-let buildData=null,buildGBU=0,manualGBU=0;
+var buildData=null,buildGBU=0,manualGBU=0;
 
-const TERRITORY_LABELS=['Executive & C-Suite','Technology & Operations','Finance & Compliance'];
+var TERRITORY_LABELS=['Executive & C-Suite','Technology & Operations','Finance & Compliance'];
 
 function openBuildModal(){
   buildData=null;buildGBU=0;manualGBU=0;
@@ -1508,8 +1508,8 @@ function confirmManualAccount(){
 }
 
 // ─── DYNAMIC ACCOUNTS VIEW ────────────────────────────────────────────────────
-const TERRITORY_IDS=[0,1,2];
-const TERRITORY_NAMES=['Executive &amp; C-Suite','Technology &amp; Operations','Finance &amp; Compliance'];
+var TERRITORY_IDS=[0,1,2];
+var TERRITORY_NAMES=['Executive &amp; C-Suite','Technology &amp; Operations','Finance &amp; Compliance'];
 
 function renderAccountsView(){
   const av=document.getElementById('accounts-view');
@@ -1943,8 +1943,8 @@ function showRipple(x,y){
 
 // Cancel drag on canvas tap (not node)
 // Canvas pan — offset stored and applied during renderCanvas
-let canPanning=false,canPanStart={x:0,y:0},canOffset={x:0,y:0},canOffsetStart={x:0,y:0};
-const canvasEl=document.getElementById('canvas');
+var canPanning=false,canPanStart={x:0,y:0},canOffset={x:0,y:0},canOffsetStart={x:0,y:0};
+var canvasEl=document.getElementById('canvas');
 
 canvasEl.addEventListener('pointerdown',e=>{
   const bg=e.target.id==='canvas'||e.target.id==='svg-layer'||e.target.tagName==='line'||e.target.tagName==='path'||e.target.tagName==='svg';
@@ -2823,7 +2823,7 @@ function confirmEnroll(){const c=contacts.find(c=>c.id===selectedId);const seq=S
 function closeEnrollModal(){document.getElementById('enroll-overlay').classList.remove('open');}
 function unenroll(id){const c=contacts.find(c=>c.id===id);if(c){c.sequence=null;renderCanvas();renderSequencesPane();renderLeft();showToast(`${c.name.split(' ')[0]} unenrolled`);}}
 
-let nextId2=9;
+var nextId2=9;
 function openAddModal(){['f-name','f-title','f-dept'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-role').value='unknown';document.getElementById('f-touch').value='30';document.getElementById('add-overlay').classList.add('open');setTimeout(()=>document.getElementById('f-name').focus(),120);}
 function closeAddModal(){document.getElementById('add-overlay').classList.remove('open');}
 function addContact(){
@@ -2833,7 +2833,7 @@ function addContact(){
   contacts.push(c);closeAddModal();renderLeft();renderCanvas();selectContact(c.id);showToast(`${name} added`);updateAlertBadge();
 }
 
-const iMeta={sfdc:{name:'Salesforce',logo:'SF',color:'#00a1e0',rgb:'0,161,224',desc:'Sync contacts, opportunities, and tasks in real time.',perms:['Read contacts & accounts','Read opportunities & activities','Read and write tasks','Account hierarchy']},outreach:{name:'Outreach',logo:'O',color:'#7c3aed',rgb:'95,46,234',desc:'Manage sequences and sync engagement data.',perms:['Read & manage sequences','Enroll / unenroll contacts','Read email & call activity','Sync step status']},linkedin:{name:'LinkedIn',logo:'in',color:'#0a66c2',rgb:'10,102,194',desc:'Pull profile data via Apollo or Clay.',perms:['Read public profile data','Recent posts & activity','Mutual connection mapping','Profile enrichment on add']}};
+var iMeta={sfdc:{name:'Salesforce',logo:'SF',color:'#00a1e0',rgb:'0,161,224',desc:'Sync contacts, opportunities, and tasks in real time.',perms:['Read contacts & accounts','Read opportunities & activities','Read and write tasks','Account hierarchy']},outreach:{name:'Outreach',logo:'O',color:'#7c3aed',rgb:'95,46,234',desc:'Manage sequences and sync engagement data.',perms:['Read & manage sequences','Enroll / unenroll contacts','Read email & call activity','Sync step status']},linkedin:{name:'LinkedIn',logo:'in',color:'#0a66c2',rgb:'10,102,194',desc:'Pull profile data via Apollo or Clay.',perms:['Read public profile data','Recent posts & activity','Mutual connection mapping','Profile enrichment on add']}};
 function openConnect(key){const m=iMeta[key];const isConn=integrations[key];document.getElementById('connect-modal-title').textContent=isConn?`${m.name} Connected`:`Connect ${m.name}`;document.getElementById('connect-body').innerHTML=`<div class="connect-logo-big" style="background:rgba(${m.rgb},.12);border:1px solid rgba(${m.rgb},.3);color:${m.color}">${m.logo}</div><div class="connect-title">${isConn?m.name+' Connected':'Connect '+m.name}</div><div class="connect-desc">${isConn?'Your '+m.name+' integration is active.':m.desc}</div><div class="connect-perms">${m.perms.map(p=>`<div class="connect-perm"><div class="perm-check">✓</div>${p}</div>`).join('')}</div>${isConn?`<button class="oauth-btn" style="background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)" onclick="disconnectInt('${key}')">Disconnect ${m.name}</button>`:`<button class="oauth-btn" style="background:rgba(${m.rgb},.15);color:${m.color};border:1px solid rgba(${m.rgb},.3)" onclick="connectInt('${key}')">Authorize with ${m.name} →</button>`}`;document.getElementById('connect-overlay').classList.add('open');}
 function connectInt(key){integrations[key]=true;closeConnectModal();updatePills();if(key==='linkedin')contacts.forEach(c=>c.li_loaded=false);renderLeft();renderCanvas();if(selectedId)renderActivePane();showToast(`✓ ${iMeta[key].name} connected`);}
 function disconnectInt(key){integrations[key]=false;closeConnectModal();updatePills();renderLeft();renderCanvas();if(selectedId)renderActivePane();showToast(`${iMeta[key].name} disconnected`);}
@@ -2859,8 +2859,8 @@ document.addEventListener('keydown',e=>{
 });
 
 // Sheet handle swipe-to-close on mobile
-const sheetHandle=document.getElementById('sheet-handle');
-let sheetDragStart=null;
+var sheetHandle=document.getElementById('sheet-handle');
+var sheetDragStart=null;
 sheetHandle.addEventListener('pointerdown',e=>{sheetDragStart=e.clientY;sheetHandle.setPointerCapture(e.pointerId);});
 sheetHandle.addEventListener('pointermove',e=>{if(!sheetDragStart)return;if(e.clientY-sheetDragStart>60){closeMobDetail();sheetDragStart=null;}});
 sheetHandle.addEventListener('pointerup',()=>{sheetDragStart=null;});
