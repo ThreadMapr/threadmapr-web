@@ -99,7 +99,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 .node.dragging{cursor:grabbing;box-shadow:0 18px 52px rgba(0,0,0,.7);z-index:10;transform:scale(1.03)}
 .node.long-press-ready{animation:longPressGlow .25s ease forwards}
 @keyframes longPressGlow{from{box-shadow:0 0 0 0 rgba(59,130,246,.5)}to{box-shadow:0 0 0 6px rgba(59,130,246,.15),0 8px 28px rgba(0,0,0,.5)}}
-.node.green-node{border-color:rgba(34,197,94,.3)}.node.yellow-node{border-color:rgba(245,158,11,.3)}.node.red-node{border-color:rgba(239,68,68,.25)}
+.node.green-node{border-color:rgba(34,197,94,.3)}.node.yellow-node{border-color:rgba(245,158,11,.3)}.node.red-node{border-color:rgba(239,68,68,.4);box-shadow:0 0 16px rgba(239,68,68,.08)}.node.eb-node{border-color:rgba(59,130,246,.4)}
 /* Anchor mode */
 .node.anchor-src{border-color:var(--violet)!important;box-shadow:0 0 0 3px rgba(139,92,246,.25),0 0 20px rgba(139,92,246,.3)!important;animation:anchorPulse 1.2s ease-in-out infinite}
 @keyframes anchorPulse{0%,100%{box-shadow:0 0 0 3px rgba(139,92,246,.25),0 0 20px rgba(139,92,246,.2)}50%{box-shadow:0 0 0 6px rgba(139,92,246,.1),0 0 30px rgba(139,92,246,.35)}}
@@ -675,7 +675,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.8</div>
+  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.9</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1943,7 +1943,7 @@ async function runBuildAccount(){
   });
 
   try{
-    const prompt=getSellerContext()+'Generate a realistic executive org chart for: '+co+'. Return ONLY valid JSON, no markdown. Start with { end with }. Structure: {"company":"'+co+'","industry":"string","contacts":[{"id":1,"name":"Full Name","title":"Exact Title","dept":"Dept","role":"economic_buyer or champion or influencer or unknown","notes":"2 sentences on their mandate","li_headline":"LinkedIn headline","crm_data":"key fact"}],"relationships":[{"manager":1,"report":2}],"alert":"coverage gap"}. Include 6-8 real executives: CEO (id:1), CFO, CTO or CIO, CMO, 2-3 VPs. Use real people if known.';
+    const prompt=getSellerContext()+'You are a B2B sales intelligence tool. Generate the REAL executive org chart for the company: '+co+'. Use ACTUAL REAL PEOPLE — search your knowledge for the real executives at '+co+' right now. Do NOT use placeholder names like Sarah Mitchell or David Chen. Return ONLY valid JSON. Start with { end with }. Structure: {"company":"'+co+'","industry":"their actual industry","contacts":[{"id":1,"name":"Real Person Full Name","title":"Their actual current title","dept":"Department","role":"economic_buyer or champion or influencer or blocker or unknown","notes":"2 sentences: their real mandate and why they matter to this deal","li_headline":"Their actual LinkedIn headline","crm_data":"One real fact about their background"}],"relationships":[{"manager":1,"report":2}],"alert":"The single most critical unmapped role or coverage gap"}. Include 6-8 REAL named executives at '+co+': actual CEO first (id:1), then actual CFO, CTO or CIO, CMO, and 2-3 real VPs or Directors. If you do not know real names at '+co+', say so in the alert field and use best-estimate titles.';
     const headers={'Content-Type':'application/json'};
     const stepsEl=document.getElementById('build-steps-el');
     if(stepsEl)stepsEl.innerHTML+='<div class="bp-st bsa"><div class="bp-dot"></div><span>Calling AI for '+co+'...</span></div>';
@@ -2382,7 +2382,7 @@ function renderLeft(){
         ondragend="listDragEnd()">
         <span><i></i><i></i></span><span><i></i><i></i></span><span><i></i><i></i></span>
       </div>
-      <div class="avatar ${ec(c.lastTouch)}-av">${initials(c.name)}</div>
+      <div class="avatar ${c.role==='blocker'?'red':c.role==='economic_buyer'?'b':ec(c.lastTouch)}-av">${initials(c.name)}</div>
       <div class="contact-info">
         <div class="contact-name">${c.name}</div>
         <div class="contact-title">${c.title}</div>
@@ -2435,8 +2435,11 @@ function renderCanvas(){
   document.querySelectorAll('.node').forEach(n=>n.remove());
   contacts.forEach(c=>{
     const cls=ec(c.lastTouch),fill=efill(c.lastTouch);
+    // Role overrides engagement color: blocker=red, economic_buyer=blue tint
+    const roleNodeClass=c.role==='blocker'?'red-node':c.role==='economic_buyer'?'eb-node':'';
+    const effectiveCls=c.role==='blocker'?'red':cls;
     const node=document.createElement('div');
-    node.className=`node ${cls}-node ${selectedId===c.id?'selected':''}${anchorId===c.id?' anchor-src':''}`;
+    node.className=`node ${roleNodeClass||effectiveCls+'-node'} ${selectedId===c.id?'selected':''}${anchorId===c.id?' anchor-src':''}`;
     node.id=`node-${c.id}`;
     node.style.cssText=`left:${c.x+canOffset.x}px;top:${c.y+canOffset.y}px`;
     const isAnchorTgt=anchorId&&anchorId!==c.id;
@@ -2452,7 +2455,7 @@ function renderCanvas(){
         <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </button>
       <div class="node-top">
-        <div class="node-avatar ${cls}-av">${initials(c.name)}</div>
+        <div class="node-avatar ${c.role==='blocker'?'red':c.role==='economic_buyer'?'b':cls}-av">${initials(c.name)}</div>
         <div class="node-text">
           <div class="node-name">${c.name}</div>
           <div class="node-title">${c.title}</div>
