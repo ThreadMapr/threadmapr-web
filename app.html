@@ -646,12 +646,35 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 .title-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .title-chip{padding:5px 11px;border-radius:16px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;transition:all .15s}
 .title-chip.sel{background:rgba(232,168,50,.1);border-color:var(--gold);color:var(--gold)}
+
+/* ── CSV IMPORT MODAL ────────────────────────────────── */
+.csv-drop{border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.csv-drop:hover,.csv-drop.drag-over{border-color:var(--accent);background:rgba(59,130,246,.05)}
+.csv-drop svg{display:block;margin:0 auto 12px;opacity:.4}
+.csv-drop-label{font-size:13px;color:var(--text2);margin-bottom:6px}
+.csv-drop-sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3)}
+.csv-preview{max-height:260px;overflow-y:auto;margin-top:14px}
+.csv-preview::-webkit-scrollbar{width:3px}.csv-preview::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.csv-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:4px;background:var(--surface2);border:1px solid var(--border)}
+.csv-row.matched{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.04)}
+.csv-row.new{border-color:rgba(232,168,50,.3);background:rgba(232,168,50,.04)}
+.csv-row.skip{opacity:.4}
+.csv-row-av{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:10px;flex-shrink:0}
+.csv-row-info{flex:1;min-width:0}
+.csv-row-name{font-size:12px;font-weight:600;font-family:'Syne',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csv-row-title{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.csv-badge{font-size:9px;font-family:'DM Mono',monospace;padding:2px 7px;border-radius:8px;flex-shrink:0}
+.csv-badge.match{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+.csv-badge.new{background:rgba(232,168,50,.1);color:var(--gold);border:1px solid rgba(232,168,50,.2)}
+.csv-badge.skip{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.csv-stat-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.csv-stat{padding:6px 12px;border-radius:8px;font-size:11px;font-family:'DM Mono',monospace}
 </style>
 <body>
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.3</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.5</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -670,6 +693,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
       <div style="width:5px;height:5px;border-radius:50%;background:var(--text3)"></div>
       <span id="profile-pill-label">Set Up Profile</span>
     </button>
+    <button onclick="clearAllData()" title="Clear all data" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;padding:4px 6px;border-radius:6px;display:none" id="clear-data-btn">reset</button>
     <button class="api-key-pill" id="api-key-pill" onclick="openApiKeyModal()" title="Set Claude API key for AI features">
       <div class="kd"></div>
       <span id="api-pill-label">API Key</span>
@@ -698,6 +722,10 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
       <button class="btn btn-ghost" onclick="openAddModal()" style="padding:7px 10px">
         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
         <span class="btn-text">Add</span>
+      </button>
+      <button class="btn btn-ghost" onclick="openCsvModal()" style="padding:7px 10px" title="Import contacts from ZoomInfo CSV">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="btn-text">Import</span>
       </button>
       <button class="btn btn-ghost" onclick="arrangeTree()" style="padding:7px 10px">
         <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="6" y="11" width="4" height="4" rx="1"/><rect x="14" y="11" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><path d="M5 7v2a2 2 0 0 0 2 2h1M19 7v2a2 2 0 0 0-2 2h-1M8 15v1a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-1"/></svg>
@@ -981,6 +1009,8 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 <script>
 // ── SELLER PROFILE — declared early so all functions can access it ──
 var PROFILE_KEY='threadmapr_seller_profile';
+var ACCOUNTS_KEY='threadmapr_accounts';
+var GLOBAL_ID_COUNTER_KEY='threadmapr_next_id';
 var DEFAULT_PROFILE={companyWebsite:'',companyName:'',products:[],personas:[],minTitle:'VP and above',customPersonas:'',firstTarget:'',setupComplete:false};
 var sellerProfile={companyWebsite:'',companyName:'',products:[],personas:[],minTitle:'VP and above',customPersonas:'',firstTarget:'',setupComplete:false};
 var onboardStep=0;
@@ -1011,19 +1041,38 @@ var ONBOARD_STEPS=[
     }
   },
   {
-    eyebrow:'Step 2 of 5 — What You Sell',
-    title:'What products do you sell?',
-    sub:'Select all that apply. This shapes which executives ThreadMapr flags as your Economic Buyers and Champions.',
+    eyebrow:'Step 2 of 5 \u2014 What You Sell',
+    title:'What do you sell?',
+    sub:'Describe what you sell and we\'ll suggest product categories. Edit or tap to select.',
     render:()=>{
-      const prods=['CRM / Sales Cloud','Service Cloud','Marketing Cloud','Data Cloud','Financial Services Cloud','Revenue Intelligence','CPQ / Billing','MuleSoft / Integration','Tableau / Analytics','Slack / Collaboration','Industry Cloud','Platform / AppExchange'];
-      return `<div class="onboard-tag-row">${prods.map(p=>`<div class="onboard-tag${sellerProfile.products.includes(p)?' sel':''}" onclick="toggleProduct('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')}</div>
-      <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px;margin-top:8px">Or describe in your own words</label>
-      <input class="onboard-input" id="ob-product-custom" placeholder="e.g. AI-powered forecasting for banks" value="${sellerProfile.customPersonas||''}"/>`;
+      const hasProducts=sellerProfile.products&&sellerProfile.products.length>0;
+      return `
+        <label style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:7px">Describe what you sell</label>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <input class="onboard-input" id="ob-product-desc" placeholder="e.g. data integration platform, HR software, security tools" value="${sellerProfile.customPersonas||''}" style="margin-bottom:0;flex:1" onkeydown="if(event.key==='Enter')lookupProducts()"/>
+          <button onclick="lookupProducts()" id="ob-lookup-btn" style="padding:10px 16px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px;min-height:44px">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            Look Up
+          </button>
+        </div>
+        <div id="ob-product-status" style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);min-height:18px;margin-bottom:8px"></div>
+        <div class="onboard-tag-row" id="ob-product-chips">
+          ${hasProducts
+            ? sellerProfile.products.map(p=>`<div class="onboard-tag sel" onclick="toggleProduct('${p.replace(/'/g,"\\'")}')">${p}</div>`).join('')
+            : '<span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">Type above and click Look Up — or add your own below</span>'
+          }
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <input class="onboard-input" id="ob-product-manual" placeholder="Add a product manually" style="margin-bottom:0;flex:1"/>
+          <button onclick="addManualProduct()" style="padding:10px 14px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;color:var(--text2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;flex-shrink:0;min-height:44px">Add</button>
+        </div>
+      `;
     },
     validate:()=>{
-      const custom=document.getElementById('ob-product-custom')?.value.trim();
-      if(!sellerProfile.products.length&&!custom){showToast('Select or describe at least one product');return false;}
-      if(custom)sellerProfile.customPersonas=custom;return true;
+      const desc=document.getElementById('ob-product-desc')?.value.trim();
+      if(!sellerProfile.products.length&&!desc){showToast('Describe what you sell or click Look Up');return false;}
+      if(desc)sellerProfile.customPersonas=desc;
+      return true;
     }
   },
   {
@@ -1103,6 +1152,57 @@ function onboardNext(){
 
 function onboardBack(){if(onboardStep>0){onboardStep--;renderOnboardStep();}}
 
+// ── PRODUCT LOOKUP (onboarding step 2) ───────────────────────────────────
+async function lookupProducts(){
+  const desc=document.getElementById('ob-product-desc')?.value.trim();
+  if(!desc){showToast('Describe what you sell first');return;}
+  const btn=document.getElementById('ob-lookup-btn');
+  const status=document.getElementById('ob-product-status');
+  const chips=document.getElementById('ob-product-chips');
+  if(btn){btn.disabled=true;btn.innerHTML='<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Looking up…';}
+  if(status)status.textContent='Looking up product categories…';
+  sellerProfile.customPersonas=desc;
+  try{
+    const co=sellerProfile.companyName||'';
+    const prompt='A sales rep at '+co+' says they sell: "'+desc+'". Return a JSON array of 6-10 specific product or solution category names that best describe what they sell. Be specific (e.g. "Revenue Intelligence" not just "Software"). No preamble, just the JSON array. Example: ["CRM Platform","Sales Intelligence","Revenue Analytics"]';
+    const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,temperature:0,messages:[{role:'user',content:prompt}]})});
+    const data=await resp.json();
+    const raw=(data.content||[]).map(b=>b.text||'').join('').trim();
+    const j1=raw.indexOf('['),j2=raw.lastIndexOf(']');
+    const parsed=JSON.parse(raw.slice(j1,j2+1));
+    if(Array.isArray(parsed)&&parsed.length){
+      sellerProfile.products=parsed;
+      if(chips){
+        chips.innerHTML=parsed.map(p=>`<div class="onboard-tag sel" onclick="toggleProduct('${p.replace(/'/g,"\'")}')"> ${p}</div>`).join('');
+      }
+      if(status)status.textContent=parsed.length+' product categories found — tap any to deselect';
+    } else throw new Error('No products returned');
+  }catch(e){
+    console.error('Lookup error:',e);
+    if(status)status.innerHTML='<span style="color:var(--red)">Lookup failed — add products manually below</span>';
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='<svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Look Up';}
+}
+
+function addManualProduct(){
+  const inp=document.getElementById('ob-product-manual');
+  const val=inp?.value.trim();
+  if(!val){showToast('Enter a product name');return;}
+  if(!sellerProfile.products.includes(val))sellerProfile.products.push(val);
+  const chips=document.getElementById('ob-product-chips');
+  if(chips){
+    // Remove empty state span if present
+    const span=chips.querySelector('span');if(span)span.remove();
+    const tag=document.createElement('div');
+    tag.className='onboard-tag sel';
+    tag.onclick=()=>toggleProduct(val);
+    tag.textContent=val;
+    chips.appendChild(tag);
+  }
+  if(inp)inp.value='';
+}
+
+
 function toggleProduct(p){
   const i=sellerProfile.products.indexOf(p);
   if(i>=0)sellerProfile.products.splice(i,1);else sellerProfile.products.push(p);
@@ -1133,6 +1233,8 @@ function closeOnboarding(){document.getElementById('onboard-overlay').classList.
 function updateProfilePill(){
   const pill=document.getElementById('profile-pill');
   if(!pill)return;
+  const clearBtn=document.getElementById('clear-data-btn');
+  if(clearBtn)clearBtn.style.display='flex';
   if(sellerProfile.setupComplete){
     pill.innerHTML='<div style="width:5px;height:5px;border-radius:50%;background:var(--green)"></div> '+sellerProfile.companyName;
     pill.style.cssText=pill.style.cssText+'border-color:rgba(34,197,94,.25);color:var(--green);background:rgba(34,197,94,.06)';
@@ -1146,12 +1248,322 @@ function loadSellerProfile(){
     const saved=localStorage.getItem(PROFILE_KEY);
     if(saved)sellerProfile={...DEFAULT_PROFILE,...JSON.parse(saved)};
     updateProfilePill();
-    if(!sellerProfile.setupComplete)setTimeout(openOnboarding,1000);
   }catch(e){console.error('Profile error:',e);}
 }
 
-loadSellerProfile();
+function initApp(){
+  loadSellerProfile();
+  const hasAccounts=loadAccounts();
+  renderAccountsView();
+  updateAlertBadge();
+  if(!sellerProfile.setupComplete){
+    setTimeout(openOnboarding,800);
+  }
+}
+
+// ── ZOOMINFO CSV IMPORT ──────────────────────────────────────────────────
+var csvParsed = [];   // parsed rows from CSV
+var csvMatched = [];  // {row, contact, action:'enrich'|'add'|'skip'}
+
+// ZoomInfo column name aliases
+var ZI_COLS = {
+  firstName:  ['First Name','first_name','FirstName'],
+  lastName:   ['Last Name','last_name','LastName'],
+  title:      ['Title','Job Title','title'],
+  company:    ['Company','Company Name','company'],
+  email:      ['Email Address','Email','email','Work Email'],
+  directPhone:['Direct Phone','Direct Phone Number','Phone','direct_phone'],
+  mobile:     ['Mobile Phone','Mobile','Cell Phone','mobile'],
+  city:       ['City','city'],
+  state:      ['State','state','State/Province'],
+  country:    ['Country','country'],
+  linkedin:   ['LinkedIn URL','LinkedIn Profile','linkedin_url','Person LinkedIn Url'],
+  department: ['Department','department','Dept'],
+  seniority:  ['Seniority','seniority','Management Level'],
+};
+
+function ziCol(row, key) {
+  const aliases = ZI_COLS[key] || [];
+  for (const alias of aliases) {
+    if (row[alias] !== undefined && row[alias] !== '') return row[alias];
+  }
+  return '';
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  // Parse header
+  const header = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    // Handle quoted fields
+    const vals = [];
+    let cur = '', inQ = false;
+    for (const ch of lines[i]) {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    vals.push(cur.trim());
+    const row = {};
+    header.forEach((h, idx) => { row[h] = (vals[idx] || '').replace(/^"|"$/g, '').trim(); });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function fuzzyMatch(csvRow, contacts) {
+  const csvFirst = ziCol(csvRow, 'firstName').toLowerCase();
+  const csvLast  = ziCol(csvRow, 'lastName').toLowerCase();
+  const csvTitle = ziCol(csvRow, 'title').toLowerCase();
+  const csvFull  = (csvFirst + ' ' + csvLast).trim();
+
+  for (const c of contacts) {
+    const cName = c.name.toLowerCase();
+    const cFirst = cName.split(' ')[0];
+    const cLast  = cName.split(' ').slice(-1)[0];
+    // Exact full name match
+    if (cName === csvFull) return { contact: c, score: 100 };
+    // Last name + title similarity
+    if (cLast === csvLast && csvTitle && c.title.toLowerCase().includes(csvTitle.slice(0,8))) return { contact: c, score: 90 };
+    // Last name + first initial
+    if (cLast === csvLast && cFirst[0] === csvFirst[0]) return { contact: c, score: 80 };
+  }
+  return null;
+}
+
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csv-drop').classList.remove('drag-over');
+  const file = e.dataTransfer?.files?.[0];
+  if (file) handleCsvFile(file);
+}
+
+function handleCsvFile(file) {
+  if (!file || !file.name.endsWith('.csv')) { showToast('Please upload a CSV file'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => processCsvText(e.target.result);
+  reader.readAsText(file);
+}
+
+function processCsvText(text) {
+  csvParsed = parseCSV(text);
+  if (!csvParsed.length) { showToast('No data found in CSV'); return; }
+
+  // Match against current contacts
+  csvMatched = csvParsed.map(row => {
+    const firstName = ziCol(row, 'firstName');
+    const lastName  = ziCol(row, 'lastName');
+    const fullName  = (firstName + ' ' + lastName).trim();
+    if (!fullName) return { row, contact: null, action: 'skip' };
+
+    const match = fuzzyMatch(row, contacts);
+    if (match) return { row, contact: match.contact, action: 'enrich', score: match.score };
+
+    // Check if company matches current account
+    const rowCompany = ziCol(row, 'company').toLowerCase();
+    const acctName = (ACCOUNTS[currentAccountId]?.name || '').toLowerCase();
+    const companyMatch = !rowCompany || acctName.includes(rowCompany) || rowCompany.includes(acctName.split(' ')[0]);
+    return { row, contact: null, action: companyMatch ? 'add' : 'skip' };
+  });
+
+  renderCsvPreview();
+}
+
+function renderCsvPreview() {
+  const area = document.getElementById('csv-preview-area');
+  const list = document.getElementById('csv-preview-list');
+  const stats = document.getElementById('csv-stats');
+  const summary = document.getElementById('csv-summary');
+  const importBtn = document.getElementById('csv-import-btn');
+  if (!area || !list) return;
+
+  area.style.display = 'block';
+
+  const enrichCount = csvMatched.filter(m => m.action === 'enrich').length;
+  const addCount    = csvMatched.filter(m => m.action === 'add').length;
+  const skipCount   = csvMatched.filter(m => m.action === 'skip').length;
+
+  stats.innerHTML = `
+    <div class="csv-stat" style="background:rgba(34,197,94,.08);color:var(--green);border:1px solid rgba(34,197,94,.2)">${enrichCount} to enrich</div>
+    <div class="csv-stat" style="background:rgba(232,168,50,.08);color:var(--gold);border:1px solid rgba(232,168,50,.2)">${addCount} new contacts</div>
+    <div class="csv-stat" style="background:var(--surface2);color:var(--text3);border:1px solid var(--border)">${skipCount} skipped</div>
+  `;
+  summary.textContent = csvParsed.length + ' rows from ZoomInfo · ' + (enrichCount + addCount) + ' will be imported';
+
+  list.innerHTML = csvMatched.map(m => {
+    const firstName = ziCol(m.row, 'firstName');
+    const lastName  = ziCol(m.row, 'lastName');
+    const name = (firstName + ' ' + lastName).trim();
+    const title = ziCol(m.row, 'title');
+    const email = ziCol(m.row, 'email');
+    const phone = ziCol(m.row, 'directPhone') || ziCol(m.row, 'mobile');
+    const city  = ziCol(m.row, 'city');
+    const state = ziCol(m.row, 'state');
+    const location = [city, state].filter(Boolean).join(', ');
+    const initl = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+    const rowClass = m.action === 'enrich' ? 'matched' : m.action === 'add' ? 'new' : 'skip';
+    const badge = m.action === 'enrich'
+      ? `<span class="csv-badge match">Enriches ${m.contact?.name?.split(' ')[0] || 'contact'}</span>`
+      : m.action === 'add'
+      ? '<span class="csv-badge new">New contact</span>'
+      : '<span class="csv-badge skip">Skipped</span>';
+    const avBg = m.action === 'enrich' ? '#052e16' : m.action === 'add' ? '#1c1400' : 'var(--surface2)';
+    const avColor = m.action === 'enrich' ? 'var(--green)' : m.action === 'add' ? 'var(--gold)' : 'var(--text3)';
+
+    const details = [email && `<span style="color:var(--accent2)">${email}</span>`, phone, location].filter(Boolean).join(' · ');
+
+    return `<div class="csv-row ${rowClass}">
+      <div class="csv-row-av" style="background:${avBg};color:${avColor}">${initl}</div>
+      <div class="csv-row-info">
+        <div class="csv-row-name">${name}</div>
+        <div class="csv-row-title">${title}${details ? ' · <span style=\'font-size:9px;color:var(--text3)\'>' + details + '</span>' : ''}</div>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+
+  if (importBtn) importBtn.style.display = enrichCount + addCount > 0 ? 'flex' : 'none';
+}
+
+function commitCsvImport() {
+  let enriched = 0, added = 0;
+
+  csvMatched.forEach(m => {
+    if (m.action === 'enrich' && m.contact) {
+      // Enrich existing contact with ZoomInfo data
+      const c = m.contact;
+      const email    = ziCol(m.row, 'email');
+      const phone    = ziCol(m.row, 'directPhone') || ziCol(m.row, 'mobile');
+      const mobile   = ziCol(m.row, 'mobile');
+      const city     = ziCol(m.row, 'city');
+      const state    = ziCol(m.row, 'state');
+      const country  = ziCol(m.row, 'country');
+      const linkedin = ziCol(m.row, 'linkedin');
+      const seniority= ziCol(m.row, 'seniority');
+
+      if (email)    c.email = email;
+      if (phone)    c.directPhone = phone;
+      if (mobile)   c.mobile = mobile;
+      if (city||state)  c.location = [city,state,country].filter(Boolean).join(', ');
+      if (linkedin) c.li_url = linkedin;
+      if (seniority)c.seniority = seniority;
+      c.zi_enriched = true;
+      enriched++;
+    } else if (m.action === 'add') {
+      // Add as new contact
+      const firstName = ziCol(m.row, 'firstName');
+      const lastName  = ziCol(m.row, 'lastName');
+      const newContact = {
+        id: globalContactId++,
+        name: (firstName + ' ' + lastName).trim(),
+        title: ziCol(m.row, 'title'),
+        dept:  ziCol(m.row, 'department') || 'General',
+        role: 'unknown',
+        lastTouch: null,
+        interactions: 0,
+        notes: '',
+        email:       ziCol(m.row, 'email'),
+        directPhone: ziCol(m.row, 'directPhone'),
+        mobile:      ziCol(m.row, 'mobile'),
+        location:    [ziCol(m.row,'city'),ziCol(m.row,'state')].filter(Boolean).join(', '),
+        li_url:      ziCol(m.row, 'linkedin'),
+        li_headline: ziCol(m.row, 'title'),
+        li_activity: [],
+        li_loaded: false,
+        li_connections: '—', li_followers: 0, li_posts: 0,
+        sfdc_stage: 'Mapping', sfdc_amount: 'TBD', sfdc_close: 'TBD',
+        sfdc_tasks: [], sequence: null,
+        zi_enriched: true,
+        x: 40 + (contacts.length % 4) * 200,
+        y: 40 + Math.floor(contacts.length / 4) * 160,
+      };
+      contacts.push(newContact);
+      added++;
+    }
+  });
+
+  // Upgrade account to Level 2 if we enriched contacts
+  if ((enriched + added) > 0 && ACCOUNTS[currentAccountId]) {
+    if (ACCOUNTS[currentAccountId].level < 2) ACCOUNTS[currentAccountId].level = 2;
+  }
+
+  saveAccounts();
+  closeCsvModal();
+  renderLeft();
+  renderCanvas();
+  renderLevelBanner();
+  showToast(`ZoomInfo import complete — ${enriched} enriched, ${added} added`);
+}
+
+function openCsvModal() {
+  csvParsed = [];
+  csvMatched = [];
+  const area = document.getElementById('csv-preview-area');
+  if (area) area.style.display = 'none';
+  const importBtn = document.getElementById('csv-import-btn');
+  if (importBtn) importBtn.style.display = 'none';
+  document.getElementById('csv-overlay').classList.add('open');
+}
+
+function closeCsvModal() {
+  document.getElementById('csv-overlay').classList.remove('open');
+}
+
+
+initApp();
 if(speechSynth&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschanged=()=>{};
+
+// ── DATA PERSISTENCE ─────────────────────────────────────────────────────
+function saveAccounts(){
+  try{
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+    // Save current account state too
+    if(currentAccountId>=0&&ACCOUNTS[currentAccountId]&&contacts&&contacts.length>0){
+      ACCOUNTS[currentAccountId].contacts=JSON.parse(JSON.stringify(contacts));
+      ACCOUNTS[currentAccountId].relationships=[...relationships];
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+    }
+  }catch(e){console.error('Save error:',e);}
+}
+
+function loadAccounts(){
+  try{
+    const saved=localStorage.getItem(ACCOUNTS_KEY);
+    if(saved){
+      const parsed=JSON.parse(saved);
+      if(Array.isArray(parsed)&&parsed.length>0){
+        ACCOUNTS.length=0;
+        parsed.forEach(a=>ACCOUNTS.push(a));
+        // Restore global ID counter to avoid collisions
+        const maxId=ACCOUNTS.reduce((m,a)=>{
+          const cMax=(a.contacts||[]).reduce((cm,c)=>Math.max(cm,c.id||0),0);
+          return Math.max(m,cMax);
+        },0);
+        if(maxId>0)globalContactId=maxId+1;
+        console.log('Loaded '+ACCOUNTS.length+' accounts from storage');
+        return true;
+      }
+    }
+  }catch(e){console.error('Load error:',e);}
+  return false;
+}
+
+function clearAllData(){
+  if(!confirm('Clear all accounts and start fresh? This cannot be undone.'))return;
+  localStorage.removeItem(ACCOUNTS_KEY);
+  ACCOUNTS.length=0;
+  currentAccountId=-1;
+  contacts=[];
+  relationships=[];
+  globalContactId=1;
+  showAccountsView();
+  renderAccountsView();
+  showToast('All data cleared');
+}
+
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 var userApiKey='',isRecording=false,isSpeaking=false,recognition=null;
@@ -1189,7 +1601,7 @@ var ACCOUNTS=[];
 var currentAccountId=-1;
 var SEQUENCES=[{id:'exec',name:'Executive Outreach',steps:6,days:14,opens:'44%',reply:'19%'},{id:'champ',name:'Champion Nurture',steps:8,days:21,opens:'63%',reply:'35%'},{id:'reeng',name:'Re-engagement',steps:4,days:10,opens:'39%',reply:'22%'},{id:'cfo',name:'CFO / Finance Intro',steps:5,days:12,opens:'51%',reply:'29%'},{id:'risk',name:'Risk & Compliance',steps:4,days:10,opens:'46%',reply:'24%'}];
 var integrations={sfdc:true,outreach:true,linkedin:false};
-var nextId=1,selectedId=null,activeTab='overview',selectedSeqId=null;
+var globalContactId=1,nextId=1,selectedId=null,activeTab='overview',selectedSeqId=null;
 var initials=n=>n.replace(/[^a-z ]/gi,'').trim().split(/\s+/).map(p=>p[0]).join('').toUpperCase().slice(0,2);
 var ec=lt=>lt<=7?'green':lt<=30?'yellow':'red';
 var efill=lt=>lt<=7?Math.max(70,100-lt*5):lt<=30?Math.max(30,60-lt):10;
@@ -1358,7 +1770,7 @@ async function runBuildAccount(){
     const headers={'Content-Type':'application/json'};
     const stepsEl=document.getElementById('build-steps-el');
     if(stepsEl)stepsEl.innerHTML+='<div class="bp-st bsa"><div class="bp-dot"></div><span>Calling AI for '+co+'...</span></div>';
-    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
+    const resp=await fetch('/api/chat',{method:'POST',headers,body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,temperature:0,system:'You are a sales intelligence API. You respond ONLY with valid JSON. Never add preamble, explanation, or markdown. Your entire response must be a single JSON object starting with { and ending with }.',messages:[{role:'user',content:prompt}]})});
     if(!resp.ok){
       const errBody=await resp.json().catch(()=>({}));
       throw new Error('HTTP '+resp.status+': '+(errBody.error||'server error'));
@@ -1456,10 +1868,18 @@ function applyTreeLayout(contacts, relationships){
 
 function confirmBuildAccount(){
   if(!buildData)return;
-  // Convert AI contacts to app contact format
+  // Convert AI contacts to app contact format — remap IDs to avoid collisions
   const newId=ACCOUNTS.length;
+  // Build an ID remap: Claude's local IDs (1,2,3...) → global unique IDs
+  const idRemap={};
+  buildData.contacts.forEach(c=>{idRemap[c.id]=globalContactId++;});
+  // Remap relationship IDs too
+  const remappedRels=(buildData.relationships||[]).map(r=>({
+    manager:idRemap[r.manager]||r.manager,
+    report:idRemap[r.report]||r.report
+  }));
   const contactsForApp=buildData.contacts.map(c=>({
-    id:c.id,name:c.name,title:c.title,dept:c.dept||'General',
+    id:idRemap[c.id],name:c.name,title:c.title,dept:c.dept||'General',
     role:c.role||'unknown',seniority:c.seniority||'',
     lastTouch:c.lastTouch!==undefined?c.lastTouch:null,
     interactions:c.interactions||0,
@@ -1488,9 +1908,10 @@ function confirmBuildAccount(){
     gbu:buildGBU,
     alert:buildData.alert||'',
     contacts:contactsForApp,
-    relationships:buildData.relationships||[],
+    relationships:remappedRels,
   };
   ACCOUNTS.push(newAcct);
+  saveAccounts();
   closeBuildModal();
   renderAccountsView();
   showToast(`${buildData.company} added — ${contactsForApp.length} contacts (Level 1)`);
@@ -1501,6 +1922,7 @@ function confirmManualAccount(){
   if(!name){showToast('Company name required');return;}
   const newId=ACCOUNTS.length;
   ACCOUNTS.push({id:newId,name,short:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,3),badge:`${name.split(' ')[0]}`,tag:TERRITORY_LABELS[manualGBU],color:'var(--text2)',level:0,gbu:manualGBU,alert:'',contacts:[],relationships:[]});
+  saveAccounts();
   closeBuildModal();
   renderAccountsView();
   openAccount(newId);
@@ -1655,7 +2077,7 @@ function renderLevelBanner(){
       badgeTxt:'L1 · Public Data',badgeBg:'rgba(34,197,94,.12)',badgeColor:'var(--green)',
       bannerClass:'l1-banner',
       text:'Showing publicly sourced contacts only. No real interaction history.',
-      ctaText:'Connect CRM → Level 2',ctaClass:'cta-l2',ctaAction:`openConnect('sfdc')`
+      ctaText:'Import ZoomInfo CSV → Level 2',ctaClass:'cta-l2',ctaAction:'openCsvModal()'
     },
     2:{
       badgeTxt:'L2 · CRM Synced',badgeBg:'rgba(59,130,246,.12)',badgeColor:'var(--accent2)',
@@ -2407,6 +2829,16 @@ function renderOverviewPane(){
       </div>
     </div>
 
+    ${(c.email||c.directPhone||c.location)?`
+    <div class="ds">
+      <div class="dl">ZoomInfo Data</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${c.email?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">EMAIL</div><a href="mailto:${c.email}" style="font-size:12px;color:var(--accent2);text-decoration:none">${c.email}</a></div>`:''}
+        ${c.directPhone?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">DIRECT</div><a href="tel:${c.directPhone}" style="font-size:12px;color:var(--text2)">${c.directPhone}</a></div>`:''}
+        ${c.mobile?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">MOBILE</div><a href="tel:${c.mobile}" style="font-size:12px;color:var(--text2)">${c.mobile}</a></div>`:''}
+        ${c.location?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">LOCATION</div><span style="font-size:12px;color:var(--text2)">${c.location}</span></div>`:''}
+      </div>
+    </div>`:''}
     <div class="ds">
       <div class="dl">Notes</div>
       <div id="notes-container-${c.id}">
@@ -2830,7 +3262,7 @@ function addContact(){
   const name=document.getElementById('f-name').value.trim();if(!name){showToast('Name is required');return;}
   const col=contacts.length%4,row=Math.floor(contacts.length/4);
   const c={id:nextId2++,name,title:document.getElementById('f-title').value.trim()||'Unknown',dept:document.getElementById('f-dept').value.trim()||'Unknown',role:document.getElementById('f-role').value,lastTouch:parseInt(document.getElementById('f-touch').value)||30,interactions:0,notes:'',sfdc_id:`003LNC0${nextId2}`,li_url:`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name)}+Lincoln+Financial`,li_loaded:false,li_headline:'',li_connections:'—',li_followers:0,li_posts:0,li_activity:[],sfdc_stage:'Mapping',sfdc_amount:'$2.4M',sfdc_close:'Dec 31, 2025',sfdc_tasks:[],sequence:null,x:60+col*195,y:28+row*158};
-  contacts.push(c);closeAddModal();renderLeft();renderCanvas();selectContact(c.id);showToast(`${name} added`);updateAlertBadge();
+  contacts.push(c);closeAddModal();renderLeft();renderCanvas();selectContact(c.id);showToast(`${name} added`);updateAlertBadge();saveAccounts();
 }
 
 var iMeta={sfdc:{name:'Salesforce',logo:'SF',color:'#00a1e0',rgb:'0,161,224',desc:'Sync contacts, opportunities, and tasks in real time.',perms:['Read contacts & accounts','Read opportunities & activities','Read and write tasks','Account hierarchy']},outreach:{name:'Outreach',logo:'O',color:'#7c3aed',rgb:'95,46,234',desc:'Manage sequences and sync engagement data.',perms:['Read & manage sequences','Enroll / unenroll contacts','Read email & call activity','Sync step status']},linkedin:{name:'LinkedIn',logo:'in',color:'#0a66c2',rgb:'10,102,194',desc:'Pull profile data via Apollo or Clay.',perms:['Read public profile data','Recent posts & activity','Mutual connection mapping','Profile enrichment on add']}};
@@ -2840,20 +3272,20 @@ function disconnectInt(key){integrations[key]=false;closeConnectModal();updatePi
 function closeConnectModal(){document.getElementById('connect-overlay').classList.remove('open');}
 function updatePills(){['sfdc','outreach','linkedin'].forEach(k=>{document.getElementById(`pill-${k==='outreach'?'out':k}`).classList.toggle('disconnected',!integrations[k]);});document.getElementById('li-dot').style.background=integrations.linkedin?'var(--green)':'var(--text3)';}
 
-function updateRole(id,v){const c=contacts.find(c=>c.id===id);if(c)c.role=v;renderLeft();renderCanvas();showToast('Role updated');}
-function updateNotes(id,v){const c=contacts.find(c=>c.id===id);if(c)c.notes=v;}
-function updateTouch(id,v){const c=contacts.find(c=>c.id===id);if(c)c.lastTouch=parseInt(v)||0;renderLeft();renderCanvas();renderOverviewPane();}
+function updateRole(id,v){const c=contacts.find(c=>c.id===id);if(c)c.role=v;renderLeft();renderCanvas();showToast('Role updated');saveAccounts();}
+function updateNotes(id,v){const c=contacts.find(c=>c.id===id);if(c)c.notes=v;saveAccounts();}
+function updateTouch(id,v){const c=contacts.find(c=>c.id===id);if(c)c.lastTouch=parseInt(v)||0;renderLeft();renderCanvas();renderOverviewPane();saveAccounts();}
 function updateAlertBadge(){const{alerts}=computeInsights();document.getElementById('alert-count').textContent=alerts.filter(a=>a.type!=='good').length;}
 
 // ─── KEYBOARD + OVERLAY CLOSE ────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     stopRecording(selectedId);stopSpeaking();cancelAnchor();
-    ['insights-overlay','enroll-overlay','add-overlay','connect-overlay','build-overlay','apikey-overlay'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
+    ['insights-overlay','enroll-overlay','add-overlay','connect-overlay','build-overlay','apikey-overlay','csv-overlay','onboard-overlay'].forEach(id=>document.getElementById(id)?.classList.remove('open'));
   }
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openAddModal();}
 });
-['insights-overlay','enroll-overlay','add-overlay','connect-overlay','build-overlay','apikey-overlay'].forEach(id=>{
+['insights-overlay','enroll-overlay','add-overlay','connect-overlay','build-overlay','apikey-overlay','csv-overlay','onboard-overlay'].forEach(id=>{
   const el=document.getElementById(id);
   if(el)el.addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
 });
@@ -2933,6 +3365,51 @@ document.addEventListener('DOMContentLoaded', () => {
       <button class="onboard-next" id="ob-next" onclick="onboardNext()">
         Continue
         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ZOOMINFO CSV IMPORT MODAL ─────────────────────────────────── -->
+<div class="modal-overlay" id="csv-overlay">
+  <div class="modal" style="width:540px;max-height:88vh;display:flex;flex-direction:column">
+    <div class="modal-header">
+      <div class="modal-title">
+        <svg width="15" height="15" fill="none" stroke="var(--accent2)" viewBox="0 0 24 24" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Import ZoomInfo CSV
+      </div>
+      <button class="modal-close" onclick="closeCsvModal()">✕</button>
+    </div>
+    <div style="padding:16px 20px;flex:1;overflow-y:auto">
+      <!-- Drop zone -->
+      <div class="csv-drop" id="csv-drop" onclick="document.getElementById('csv-file-input').click()"
+           ondragover="event.preventDefault();this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleCsvDrop(event)">
+        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div class="csv-drop-label">Drop your ZoomInfo export here</div>
+        <div class="csv-drop-sub">or click to browse · CSV files only</div>
+      </div>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCsvFile(this.files[0])"/>
+
+      <!-- Column mapping hint -->
+      <div style="margin-top:10px;padding:10px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Expected ZoomInfo columns</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.8">First Name · Last Name · Title · Company · Email Address · Direct Phone · Mobile Phone · City · State · LinkedIn URL · Department · Seniority</div>
+      </div>
+
+      <!-- Preview -->
+      <div id="csv-preview-area" style="display:none;margin-top:14px">
+        <div class="csv-stat-row" id="csv-stats"></div>
+        <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:8px" id="csv-summary"></div>
+        <div class="csv-preview" id="csv-preview-list"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeCsvModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="csv-import-btn" onclick="commitCsvImport()" style="display:none">
+        <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+        Import Contacts
       </button>
     </div>
   </div>
