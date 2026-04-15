@@ -675,7 +675,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.9</div>
+  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v4.0</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1965,12 +1965,12 @@ async function runBuildAccount(){
     showToast(err.message);
     if(document.getElementById('build-steps-el'))document.getElementById('build-steps-el').innerHTML+='<div class="bp-st bsa"><div class="bp-dot" style="background:var(--red)"></div><span style="color:var(--red)">'+err.message+'</span></div>';
     buildData={company:co,industry:'Enterprise',contacts:[
-      {id:201,name:'Sarah Mitchell',title:'Chief Executive Officer',dept:'Executive',role:'economic_buyer',source:'LinkedIn',crm_data:'CEO since 2022, previously COO',li_headline:'Chief Executive Officer',li_activity:[],notes:'Economic buyer — final authority on enterprise spend.'},
-      {id:202,name:'David Chen',title:'Chief Financial Officer',dept:'Finance',role:'unknown',source:'Company website',crm_data:'Princeton MBA, CPA',li_headline:'CFO',li_activity:[],notes:'Controls budget approval. Key to map before procurement.'},
-      {id:203,name:'Jennifer Walsh',title:'Chief Information Officer',dept:'Technology',role:'champion',source:'LinkedIn',crm_data:'Led cloud migration 2023',li_headline:'CIO — Modernization leader',li_activity:[],notes:'Most likely Champion. Tech-focused, modernization mandate.'},
-      {id:204,name:'Marcus Johnson',title:'VP, Marketing Operations',dept:'Marketing',role:'influencer',source:'LinkedIn',crm_data:'Owns MarTech stack',li_headline:'VP Marketing Operations',li_activity:[],notes:'Influencer on platform decisions. Controls MarTech budget.'},
-      {id:205,name:'Rachel Torres',title:'SVP, Revenue Operations',dept:'Sales',role:'influencer',source:'Crunchbase',crm_data:'$200M rev responsibility',li_headline:'SVP Revenue Operations',li_activity:[],notes:'Key revenue ops influencer. Cares about pipeline and tooling.'},
-      {id:206,name:'Kevin Park',title:'Director, IT Infrastructure',dept:'Technology',role:'unknown',source:'LinkedIn',crm_data:'Vendor security reviews',li_headline:'Director IT Infrastructure',li_activity:[],notes:'Will be involved in vendor security and deployment review.'},
+      {id:201,name:'Chief Executive Officer',title:'Chief Executive Officer',dept:'Executive',role:'economic_buyer',source:'Public',crm_data:'CEO — final budget authority',li_headline:'CEO at '+co,li_activity:[],notes:'Economic buyer — final authority on enterprise spend. Name not yet confirmed.'},
+      {id:202,name:'Chief Financial Officer',title:'Chief Financial Officer',dept:'Finance',role:'unknown',source:'Public',crm_data:'CFO — controls budget approval',li_headline:'CFO at '+co,li_activity:[],notes:'Controls budget approval and procurement sign-off. Key to map before any deal progresses.'},
+      {id:203,name:'Chief Information Officer',title:'Chief Information Officer',dept:'Technology',role:'champion',source:'Public',crm_data:'CIO — technology mandate',li_headline:'CIO at '+co,li_activity:[],notes:'Most likely Champion. Tech-focused, modernization mandate. Confirm name via LinkedIn.'},
+      {id:204,name:'VP Marketing',title:'VP, Marketing',dept:'Marketing',role:'influencer',source:'Public',crm_data:'Owns marketing stack',li_headline:'VP Marketing at '+co,li_activity:[],notes:'Influencer on platform decisions. Confirm actual name via ZoomInfo import.'},
+      {id:205,name:'VP Revenue Operations',title:'SVP, Revenue Operations',dept:'Sales',role:'influencer',source:'Public',crm_data:'Revenue operations leader',li_headline:'SVP Revenue Operations at '+co,li_activity:[],notes:'Key revenue ops influencer. Cares about pipeline and tooling efficiency.'},
+      {id:206,name:'Director IT Infrastructure',title:'Director, IT Infrastructure',dept:'Technology',role:'unknown',source:'Public',crm_data:'IT infrastructure lead',li_headline:'Director IT at '+co,li_activity:[],notes:'Will be involved in vendor security and deployment review.'},
     ],relationships:[{manager:201,report:202},{manager:201,report:203},{manager:201,report:204},{manager:201,report:205},{manager:203,report:206}],
     alert:`CFO and IT Infrastructure not yet engaged at ${co} — critical gaps before procurement sign-off.`};
   }
