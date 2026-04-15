@@ -308,55 +308,108 @@ h1 em{font-style:italic;color:var(--gold)}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-function signIn(){
+// ── THREADMAPR CONFIG — swap these two values ─────────────────────────────
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://abcdefgh.supabase.co
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'; // from Settings → API → anon public
+// ─────────────────────────────────────────────────────────────────────────
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// If already logged in, go straight to app
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'app.html';
+});
+
+let isSignUp = false;
+
+function toggleMode() {
+  isSignUp = !isSignUp;
+  const title   = document.getElementById('form-title');
+  const sub     = document.getElementById('form-sub');
+  const btn     = document.getElementById('sign-btn');
+  const toggle  = document.getElementById('mode-toggle');
+  const confirmRow = document.getElementById('confirm-row');
+  if (title)   title.textContent   = isSignUp ? 'Create your account' : 'Welcome back';
+  if (sub)     sub.textContent     = isSignUp ? 'Start mapping accounts for free.' : 'Sign in to your ThreadMapr workspace.';
+  if (btn)     btn.textContent     = isSignUp ? 'Create Account' : 'Sign In';
+  if (toggle)  toggle.innerHTML    = isSignUp
+    ? 'Already have an account? <a href="#" onclick="toggleMode();return false">Sign in</a>'
+    : 'New to ThreadMapr? <a href="#" onclick="toggleMode();return false">Create account</a>';
+  if (confirmRow) confirmRow.style.display = isSignUp ? 'flex' : 'none';
+  document.getElementById('err-banner').classList.remove('vis');
+}
+
+async function signIn() {
   const email = document.getElementById('inp-email').value.trim();
   const pass  = document.getElementById('inp-pass').value;
-  const banner = document.getElementById('err-banner');
-  const btn = document.getElementById('sign-btn');
+  const btn   = document.getElementById('sign-btn');
+  const banner= document.getElementById('err-banner');
+  const errMsg= document.getElementById('err-msg');
 
-  // clear errors
   banner.classList.remove('vis');
-  ['inp-email','inp-pass'].forEach(id=>document.getElementById(id).classList.remove('err'));
+  ['inp-email','inp-pass'].forEach(id => document.getElementById(id).classList.remove('err'));
 
-  // basic validation
-  if(!email || !email.includes('@')){
+  if (!email || !email.includes('@')) {
     document.getElementById('inp-email').classList.add('err');
-    document.getElementById('err-msg').textContent = 'Please enter a valid email address.';
-    banner.classList.add('vis');
-    return;
+    errMsg.textContent = 'Enter a valid email address.';
+    banner.classList.add('vis'); return;
   }
-  if(pass.length < 1){
+  if (pass.length < 6) {
     document.getElementById('inp-pass').classList.add('err');
-    document.getElementById('err-msg').textContent = 'Please enter your password.';
-    banner.classList.add('vis');
-    return;
+    errMsg.textContent = 'Password must be at least 6 characters.';
+    banner.classList.add('vis'); return;
   }
 
-  // loading state
   btn.classList.add('loading');
+  btn.textContent = '';
 
-  // Demo: any valid email + any password gets in (swap for real auth later)
-  setTimeout(()=>{
-    // Demo credentials check — remove/replace with real auth
-    // For now: any @company.com email with any password works
-    // Or use specific demo creds: demo@threadmapr.com / threadmapr2025
-    const demoEmail = 'demo@threadmapr.com';
-    const demoPass  = 'threadmapr2025';
-
-    if(email === demoEmail && pass === demoPass){
-      // success — go to app
-      window.location.href = 'app.html';
-    } else if(email.includes('@') && pass.length >= 6){
-      // permissive for early access partners — swap with real auth
-      window.location.href = 'app.html';
-    } else {
+  if (isSignUp) {
+    const confirm = document.getElementById('inp-confirm')?.value;
+    if (confirm !== pass) {
       btn.classList.remove('loading');
-      document.getElementById('inp-pass').classList.add('err');
-      document.getElementById('err-msg').textContent = 'Incorrect password. Try: threadmapr2025';
-      banner.classList.add('vis');
+      btn.textContent = 'Create Account';
+      document.getElementById('inp-confirm').classList.add('err');
+      errMsg.textContent = 'Passwords do not match.';
+      banner.classList.add('vis'); return;
     }
-  }, 900);
+    const { error } = await sb.auth.signUp({ email, password: pass });
+    if (error) {
+      btn.classList.remove('loading');
+      btn.textContent = 'Create Account';
+      errMsg.textContent = error.message;
+      banner.classList.add('vis'); return;
+    }
+    // Show confirmation message
+    btn.classList.remove('loading');
+    banner.style.background = 'rgba(34,197,94,.08)';
+    banner.style.borderColor = 'rgba(34,197,94,.25)';
+    errMsg.style.color = 'var(--green)';
+    errMsg.textContent = 'Account created! Check your email to confirm, then sign in.';
+    banner.classList.add('vis');
+    isSignUp = false;
+    btn.textContent = 'Sign In';
+  } else {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      btn.classList.remove('loading');
+      btn.textContent = 'Sign In';
+      document.getElementById('inp-pass').classList.add('err');
+      errMsg.textContent = error.message === 'Invalid login credentials'
+        ? 'Incorrect email or password.'
+        : error.message;
+      banner.classList.add('vis'); return;
+    }
+    window.location.href = 'app.html';
+  }
+}
+
+async function signInWithGoogle() {
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/app.html' }
+  });
 }
 </script>
 </body>

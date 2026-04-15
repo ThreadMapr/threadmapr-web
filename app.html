@@ -670,11 +670,12 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 .csv-stat-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
 .csv-stat{padding:6px 12px;border-radius:8px;font-size:11px;font-family:'DM Mono',monospace}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <body>
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.5</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.6</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -694,6 +695,10 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
       <span id="profile-pill-label">Set Up Profile</span>
     </button>
     <button onclick="clearAllData()" title="Clear all data" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;padding:4px 6px;border-radius:6px;display:none" id="clear-data-btn">reset</button>
+    <div id="user-email-pill" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);padding:4px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;gap:6px;cursor:pointer" onclick="signOut()" title="Sign out">
+      <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>user</span>
+    </div>
     <button class="api-key-pill" id="api-key-pill" onclick="openApiKeyModal()" title="Set Claude API key for AI features">
       <div class="kd"></div>
       <span id="api-pill-label">API Key</span>
@@ -1007,6 +1012,169 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 <div class="toast" id="toast"></div>
 
 <script>
+// ── SUPABASE CONFIG ──────────────────────────────────────────────────────
+const SUPABASE_URL  = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+var currentUser = null;
+
+// Auth guard — redirect to login if not signed in
+async function checkAuth() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  currentUser = session.user;
+  // Show user email in header
+  const emailEl = document.getElementById('user-email-pill');
+  if (emailEl) emailEl.textContent = currentUser.email.split('@')[0];
+  return true;
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = 'login.html';
+}
+
+// ── SUPABASE DATA LAYER ───────────────────────────────────────────────────
+async function saveAccountsToDb() {
+  if (!currentUser) return;
+  try {
+    // Sync current canvas state first
+    if (currentAccountId >= 0 && ACCOUNTS[currentAccountId] && contacts && contacts.length > 0) {
+      ACCOUNTS[currentAccountId].contacts = JSON.parse(JSON.stringify(contacts));
+      ACCOUNTS[currentAccountId].relationships = [...relationships];
+    }
+    // Upsert each account
+    const upserts = ACCOUNTS.map(a => ({
+      id:            a.db_id || undefined,
+      user_id:       currentUser.id,
+      name:          a.name,
+      short:         a.short,
+      badge:         a.badge,
+      tag:           a.tag,
+      level:         a.level || 1,
+      gbu:           a.gbu || 0,
+      alert:         a.alert || '',
+      contacts:      a.contacts || [],
+      relationships: a.relationships || [],
+    }));
+    const { data, error } = await sb.from('accounts').upsert(upserts, { onConflict: 'id' }).select('id, name');
+    if (error) throw error;
+    // Store db_id back on ACCOUNTS for future upserts
+    if (data) {
+      data.forEach(row => {
+        const acct = ACCOUNTS.find(a => a.name === row.name && !a.db_id);
+        if (acct) acct.db_id = row.id;
+      });
+    }
+    // Also save to localStorage as fast offline cache
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+  } catch(e) {
+    console.error('DB save error:', e);
+    // Fall back to localStorage only
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+  }
+}
+
+async function loadAccountsFromDb() {
+  if (!currentUser) return false;
+  try {
+    const { data, error } = await sb
+      .from('accounts')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('updated_at', { ascending: false });
+    if (error) throw error;
+    if (data && data.length > 0) {
+      ACCOUNTS.length = 0;
+      data.forEach(row => {
+        ACCOUNTS.push({
+          db_id:         row.id,
+          id:            ACCOUNTS.length,
+          name:          row.name,
+          short:         row.short || row.name.slice(0,3).toUpperCase(),
+          badge:         row.badge || row.name,
+          tag:           row.tag || 'General',
+          level:         row.level || 1,
+          gbu:           row.gbu || 0,
+          alert:         row.alert || '',
+          contacts:      row.contacts || [],
+          relationships: row.relationships || [],
+          color:         'var(--accent)',
+        });
+      });
+      // Sync global ID counter
+      const maxId = ACCOUNTS.reduce((m, a) => {
+        const cMax = (a.contacts || []).reduce((cm, c) => Math.max(cm, c.id || 0), 0);
+        return Math.max(m, cMax);
+      }, 0);
+      if (maxId > 0) globalContactId = maxId + 1;
+      console.log('Loaded ' + ACCOUNTS.length + ' accounts from Supabase');
+      return true;
+    }
+  } catch(e) {
+    console.error('DB load error:', e);
+  }
+  // Fall back to localStorage cache
+  return loadAccounts();
+}
+
+async function saveProfileToDb() {
+  if (!currentUser) return;
+  try {
+    const { error } = await sb.from('seller_profiles').upsert({
+      id:              currentUser.id,
+      company_name:    sellerProfile.companyName,
+      company_website: sellerProfile.companyWebsite,
+      products:        sellerProfile.products,
+      personas:        sellerProfile.personas,
+      min_title:       sellerProfile.minTitle,
+      custom_personas: sellerProfile.customPersonas,
+      first_target:    sellerProfile.firstTarget,
+      setup_complete:  sellerProfile.setupComplete,
+    });
+    if (error) throw error;
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(sellerProfile));
+  } catch(e) {
+    console.error('Profile save error:', e);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(sellerProfile));
+  }
+}
+
+async function loadProfileFromDb() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await sb
+      .from('seller_profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
+    if (data) {
+      sellerProfile = {
+        companyName:    data.company_name || '',
+        companyWebsite: data.company_website || '',
+        products:       data.products || [],
+        personas:       data.personas || [],
+        minTitle:       data.min_title || 'VP and above',
+        customPersonas: data.custom_personas || '',
+        firstTarget:    data.first_target || '',
+        setupComplete:  data.setup_complete || false,
+      };
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(sellerProfile));
+    }
+  } catch(e) {
+    console.error('Profile load error:', e);
+    // Fall back to localStorage
+    const saved = localStorage.getItem(PROFILE_KEY);
+    if (saved) sellerProfile = { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
+  }
+}
+
+
 // ── SELLER PROFILE — declared early so all functions can access it ──
 var PROFILE_KEY='threadmapr_seller_profile';
 var ACCOUNTS_KEY='threadmapr_accounts';
@@ -1137,7 +1305,7 @@ function onboardNext(){
   if(!ONBOARD_STEPS[onboardStep].validate())return;
   if(onboardStep===4){
     sellerProfile.setupComplete=true;
-    localStorage.setItem(PROFILE_KEY,JSON.stringify(sellerProfile));
+    saveProfileToDb();
     closeOnboarding();updateProfilePill();
     setTimeout(()=>{
       openBuildModal();
@@ -1251,13 +1419,21 @@ function loadSellerProfile(){
   }catch(e){console.error('Profile error:',e);}
 }
 
-function initApp(){
-  loadSellerProfile();
-  const hasAccounts=loadAccounts();
+async function initApp(){
+  // Auth check first — redirect to login if no session
+  const authed = await checkAuth();
+  if (!authed) return;
+
+  // Load profile and accounts from Supabase (with localStorage fallback)
+  await loadProfileFromDb();
+  await loadAccountsFromDb();
+
+  updateProfilePill();
   renderAccountsView();
   updateAlertBadge();
-  if(!sellerProfile.setupComplete){
-    setTimeout(openOnboarding,800);
+
+  if (!sellerProfile.setupComplete) {
+    setTimeout(openOnboarding, 800);
   }
 }
 
@@ -1518,15 +1694,16 @@ if(speechSynth&&speechSynth.onvoiceschanged!==undefined)speechSynth.onvoiceschan
 
 // ── DATA PERSISTENCE ─────────────────────────────────────────────────────
 function saveAccounts(){
+  // Save to localStorage immediately (fast, offline-safe)
   try{
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
-    // Save current account state too
     if(currentAccountId>=0&&ACCOUNTS[currentAccountId]&&contacts&&contacts.length>0){
       ACCOUNTS[currentAccountId].contacts=JSON.parse(JSON.stringify(contacts));
       ACCOUNTS[currentAccountId].relationships=[...relationships];
-      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
     }
-  }catch(e){console.error('Save error:',e);}
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+  }catch(e){console.error('Local save error:',e);}
+  // Then sync to Supabase async (non-blocking)
+  saveAccountsToDb().catch(e=>console.error('DB sync error:',e));
 }
 
 function loadAccounts(){
