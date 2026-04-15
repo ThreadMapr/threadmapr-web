@@ -675,7 +675,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.6</div>
+  <div style="font-size:9px;font-family:'DM Mono',monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v3.7</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -762,15 +762,15 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
       <div class="pipeline-lbl">Accounts Mapped</div>
     </div>
     <div class="pipeline-stat">
-      <div class="pipeline-num" id="pipe-accts">2</div>
+      <div class="pipeline-num" id="pipe-accts">0</div>
       <div class="pipeline-lbl">Target Accounts</div>
     </div>
     <div class="pipeline-stat">
-      <div class="pipeline-num" id="pipe-gaps" style="color:var(--yellow)">3</div>
+      <div class="pipeline-num" id="pipe-gaps" style="color:var(--text3)">0</div>
       <div class="pipeline-lbl">Unmapped Roles</div>
     </div>
     <div class="pipeline-stat">
-      <div class="pipeline-num" id="pipe-cov" style="color:var(--green)">51%</div>
+      <div class="pipeline-num" id="pipe-cov" style="color:var(--text3)">—</div>
       <div class="pipeline-lbl">Avg Map Depth</div>
     </div>
   </div>
@@ -2346,7 +2346,8 @@ function updatePipelineBar(){
   const ta=document.getElementById('pipe-accts');
   const tg=document.getElementById('pipe-gaps');
   const tc=document.getElementById('pipe-cov');
-  if(tp)tp.textContent=ACCOUNTS.length;
+  const mappedAccts=ACCOUNTS.filter(a=>(a.contacts||[]).length>0).length;
+  if(tp)tp.textContent=mappedAccts;
   if(ta)ta.textContent=totalAccts;
   if(tg){tg.textContent=dark;tg.style.color=dark>3?'var(--red)':dark>0?'var(--yellow)':'var(--green)';}
   if(tc){tc.textContent=avgCov+'%';tc.style.color=avgCov>=60?'var(--green)':avgCov>=35?'var(--yellow)':'var(--red)';}
@@ -2877,6 +2878,17 @@ Return ONLY a valid JSON object with exactly these four keys (no markdown, no pr
 
 
 // ─── OVERVIEW PANE ────────────────────────────────────────────────────────
+
+function buildZiSection(c){
+  if(!c.email&&!c.directPhone&&!c.location&&!c.mobile)return '';
+  const rows=[];
+  if(c.email)rows.push('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">EMAIL</div><a href="mailto:'+c.email+'" style="font-size:12px;color:var(--accent2);text-decoration:none">'+c.email+'</a></div>');
+  if(c.directPhone)rows.push('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">DIRECT</div><a href="tel:'+c.directPhone+'" style="font-size:12px;color:var(--text2)">'+c.directPhone+'</a></div>');
+  if(c.mobile)rows.push('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">MOBILE</div><a href="tel:'+c.mobile+'" style="font-size:12px;color:var(--text2)">'+c.mobile+'</a></div>');
+  if(c.location)rows.push('<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">LOCATION</div><span style="font-size:12px;color:var(--text2)">'+c.location+'</span></div>');
+  return '<div class="ds"><div class="dl">Contact Info</div><div style="display:flex;flex-direction:column;gap:6px">'+rows.join('')+'</div></div>';
+}
+
 function renderOverviewPane(){
   const pane=document.getElementById('pane-overview');
   if(!selectedId){pane.innerHTML=emptyState('Tap a contact or node to view details');return;}
@@ -3006,16 +3018,7 @@ function renderOverviewPane(){
       </div>
     </div>
 
-    ${(c.email||c.directPhone||c.location)?`
-    <div class="ds">
-      <div class="dl">ZoomInfo Data</div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${c.email?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">EMAIL</div><a href="mailto:${c.email}" style="font-size:12px;color:var(--accent2);text-decoration:none">${c.email}</a></div>`:''}
-        ${c.directPhone?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">DIRECT</div><a href="tel:${c.directPhone}" style="font-size:12px;color:var(--text2)">${c.directPhone}</a></div>`:''}
-        ${c.mobile?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">MOBILE</div><a href="tel:${c.mobile}" style="font-size:12px;color:var(--text2)">${c.mobile}</a></div>`:''}
-        ${c.location?`<div style="display:flex;align-items:center;gap:8px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);width:52px;flex-shrink:0">LOCATION</div><span style="font-size:12px;color:var(--text2)">${c.location}</span></div>`:''}
-      </div>
-    </div>`:''}
+    ${buildZiSection(c)}
     <div class="ds">
       <div class="dl">Notes</div>
       <div id="notes-container-${c.id}">
