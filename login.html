@@ -168,8 +168,14 @@ h1 em{font-style:italic;color:var(--gold)}
 
   <div class="badge"><div class="badge-dot"></div>Early Access Program</div>
 
-  <h1>Back to<br><em>the map.</em></h1>
-  <p class="sub">Sign in to build your org chart, enrich your contacts, and multithread with confidence.</p>
+  <h1 id="form-title">Back to<br><em>the map.</em></h1>
+  <p class="sub" id="form-sub">Sign in to your ThreadMapr workspace.</p>
+
+  <!-- Mode toggle tabs -->
+  <div style="display:flex;gap:0;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:3px;margin-bottom:24px">
+    <button id="tab-signin" onclick="setMode('signin')" style="flex:1;padding:9px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:var(--accent);color:#fff">Sign In</button>
+    <button id="tab-signup" onclick="setMode('signup')" style="flex:1;padding:9px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;background:transparent;color:var(--text3)">Create Account</button>
+  </div>
 
   <div class="form">
     <div class="error-banner" id="err-banner">
@@ -187,18 +193,17 @@ h1 em{font-style:italic;color:var(--gold)}
       <input type="password" id="inp-pass" placeholder="••••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()"/>
     </div>
 
-    <a class="forgot" href="#">Forgot password?</a>
+    <div class="field" id="confirm-row" style="display:none">
+      <label>Confirm Password</label>
+      <input type="password" id="inp-confirm" placeholder="••••••••••"/>
+    </div>
+
+    <a class="forgot" href="#" id="forgot-link" onclick="resetPassword();return false">Forgot password?</a>
 
     <button class="btn-sign" id="sign-btn" onclick="signIn()">
       <div class="spinner"></div>
-      <span class="btn-txt">Sign In →</span>
+      <span class="btn-txt" id="btn-label">Sign In →</span>
     </button>
-
-    <div class="divider"><span>or</span></div>
-
-    <a class="btn-demo" href="app.html">Continue with Demo Access</a>
-
-    <div class="signup-row">Don't have access? <a href="index.html#get-access">Request early access →</a></div>
   </div>
 </div>
 
@@ -310,10 +315,8 @@ h1 em{font-style:italic;color:var(--gold)}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ── THREADMAPR CONFIG — swap these two values ─────────────────────────────
-const SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // e.g. https://abcdefgh.supabase.co
-const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'; // from Settings → API → anon public
-// ─────────────────────────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://tcpaqrvfrmgfquvixkus.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjcGFxcnZmcm1nZnF1dml4a3VzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyMDQ0MTUsImV4cCI6MjA5MTc4MDQxNX0.am6NDaepQLpI03HbwLt9emtJHaSSfVgGm7BK4_Pp3zo';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
@@ -322,94 +325,117 @@ sb.auth.getSession().then(({ data: { session } }) => {
   if (session) window.location.href = 'app.html';
 });
 
-let isSignUp = false;
+var isSignUp = false;
 
-function toggleMode() {
-  isSignUp = !isSignUp;
-  const title   = document.getElementById('form-title');
-  const sub     = document.getElementById('form-sub');
-  const btn     = document.getElementById('sign-btn');
-  const toggle  = document.getElementById('mode-toggle');
+function setMode(mode) {
+  isSignUp = mode === 'signup';
+  const siTab = document.getElementById('tab-signin');
+  const suTab = document.getElementById('tab-signup');
   const confirmRow = document.getElementById('confirm-row');
-  if (title)   title.textContent   = isSignUp ? 'Create your account' : 'Welcome back';
-  if (sub)     sub.textContent     = isSignUp ? 'Start mapping accounts for free.' : 'Sign in to your ThreadMapr workspace.';
-  if (btn)     btn.textContent     = isSignUp ? 'Create Account' : 'Sign In';
-  if (toggle)  toggle.innerHTML    = isSignUp
-    ? 'Already have an account? <a href="#" onclick="toggleMode();return false">Sign in</a>'
-    : 'New to ThreadMapr? <a href="#" onclick="toggleMode();return false">Create account</a>';
-  if (confirmRow) confirmRow.style.display = isSignUp ? 'flex' : 'none';
+  const btnLabel = document.getElementById('btn-label');
+  const title = document.getElementById('form-title');
+  const sub = document.getElementById('form-sub');
+  const forgotLink = document.getElementById('forgot-link');
+
+  if (isSignUp) {
+    siTab.style.background = 'transparent'; siTab.style.color = 'var(--text3)';
+    suTab.style.background = 'var(--accent)'; suTab.style.color = '#fff';
+    if (confirmRow) confirmRow.style.display = 'flex';
+    if (btnLabel) btnLabel.textContent = 'Create Account →';
+    if (title) title.innerHTML = 'Join<br><em>ThreadMapr.</em>';
+    if (sub) sub.textContent = 'Create your account and start mapping accounts.';
+    if (forgotLink) forgotLink.style.display = 'none';
+  } else {
+    siTab.style.background = 'var(--accent)'; siTab.style.color = '#fff';
+    suTab.style.background = 'transparent'; suTab.style.color = 'var(--text3)';
+    if (confirmRow) confirmRow.style.display = 'none';
+    if (btnLabel) btnLabel.textContent = 'Sign In →';
+    if (title) title.innerHTML = 'Back to<br><em>the map.</em>';
+    if (sub) sub.textContent = 'Sign in to your ThreadMapr workspace.';
+    if (forgotLink) forgotLink.style.display = 'block';
+  }
   document.getElementById('err-banner').classList.remove('vis');
+}
+
+async function resetPassword() {
+  const email = document.getElementById('inp-email').value.trim();
+  if (!email || !email.includes('@')) {
+    showErr('Enter your email address first, then click Forgot password.');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/login.html'
+  });
+  if (error) { showErr(error.message); return; }
+  showSuccess('Password reset email sent — check your inbox.');
+}
+
+function showErr(msg) {
+  const banner = document.getElementById('err-banner');
+  const errMsg = document.getElementById('err-msg');
+  banner.style.background = '';
+  banner.style.borderColor = '';
+  errMsg.style.color = '';
+  errMsg.textContent = msg;
+  banner.classList.add('vis');
+}
+
+function showSuccess(msg) {
+  const banner = document.getElementById('err-banner');
+  const errMsg = document.getElementById('err-msg');
+  banner.style.background = 'rgba(34,197,94,.08)';
+  banner.style.borderColor = 'rgba(34,197,94,.25)';
+  errMsg.style.color = 'var(--green)';
+  errMsg.textContent = msg;
+  banner.classList.add('vis');
 }
 
 async function signIn() {
   const email = document.getElementById('inp-email').value.trim();
   const pass  = document.getElementById('inp-pass').value;
   const btn   = document.getElementById('sign-btn');
-  const banner= document.getElementById('err-banner');
-  const errMsg= document.getElementById('err-msg');
 
-  banner.classList.remove('vis');
-  ['inp-email','inp-pass'].forEach(id => document.getElementById(id).classList.remove('err'));
+  document.getElementById('err-banner').classList.remove('vis');
+  ['inp-email','inp-pass','inp-confirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('err');
+  });
 
   if (!email || !email.includes('@')) {
     document.getElementById('inp-email').classList.add('err');
-    errMsg.textContent = 'Enter a valid email address.';
-    banner.classList.add('vis'); return;
+    showErr('Enter a valid email address.'); return;
   }
   if (pass.length < 6) {
     document.getElementById('inp-pass').classList.add('err');
-    errMsg.textContent = 'Password must be at least 6 characters.';
-    banner.classList.add('vis'); return;
+    showErr('Password must be at least 6 characters.'); return;
   }
 
   btn.classList.add('loading');
-  btn.textContent = '';
 
   if (isSignUp) {
     const confirm = document.getElementById('inp-confirm')?.value;
     if (confirm !== pass) {
       btn.classList.remove('loading');
-      btn.textContent = 'Create Account';
       document.getElementById('inp-confirm').classList.add('err');
-      errMsg.textContent = 'Passwords do not match.';
-      banner.classList.add('vis'); return;
+      showErr('Passwords do not match.'); return;
     }
     const { error } = await sb.auth.signUp({ email, password: pass });
-    if (error) {
-      btn.classList.remove('loading');
-      btn.textContent = 'Create Account';
-      errMsg.textContent = error.message;
-      banner.classList.add('vis'); return;
-    }
-    // Show confirmation message
     btn.classList.remove('loading');
-    banner.style.background = 'rgba(34,197,94,.08)';
-    banner.style.borderColor = 'rgba(34,197,94,.25)';
-    errMsg.style.color = 'var(--green)';
-    errMsg.textContent = 'Account created! Check your email to confirm, then sign in.';
-    banner.classList.add('vis');
-    isSignUp = false;
-    btn.textContent = 'Sign In';
+    if (error) { showErr(error.message); return; }
+    showSuccess('Account created! Check your email to confirm, then sign in.');
+    setMode('signin');
   } else {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
       btn.classList.remove('loading');
-      btn.textContent = 'Sign In';
       document.getElementById('inp-pass').classList.add('err');
-      errMsg.textContent = error.message === 'Invalid login credentials'
+      showErr(error.message === 'Invalid login credentials'
         ? 'Incorrect email or password.'
-        : error.message;
-      banner.classList.add('vis'); return;
+        : error.message);
+      return;
     }
     window.location.href = 'app.html';
   }
-}
-
-async function signInWithGoogle() {
-  await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: window.location.origin + '/app.html' }
-  });
 }
 </script>
 </body>
