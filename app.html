@@ -675,7 +675,7 @@ header{display:flex;align-items:center;padding:0 16px;height:50px;background:var
 
 <header id="main-header">
   <div class="logo" style="cursor:pointer" onclick="showAccountsView()"><div class="logo-dot"></div>ThreadMapr</div>
-  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v4.0</div>
+  <div style="font-size:9px;font-family:DM Mono,monospace;padding:2px 6px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);flex-shrink:0">v4.1</div>
 
   <!-- HOME HEADER STATE -->
   <div class="header-home-content" id="header-home">
@@ -1728,17 +1728,29 @@ function loadAccounts(){
   return false;
 }
 
-function clearAllData(){
+async function clearAllData(){
   if(!confirm('Clear all accounts and start fresh? This cannot be undone.'))return;
+  // Clear Supabase first
+  if(currentUser){
+    try{
+      await sb.from('accounts').delete().eq('user_id',currentUser.id);
+      await sb.from('seller_profiles').delete().eq('id',currentUser.id);
+    }catch(e){console.error('Supabase clear error:',e);}
+  }
+  // Clear localStorage
   localStorage.removeItem(ACCOUNTS_KEY);
+  localStorage.removeItem(PROFILE_KEY);
+  // Reset all state
   ACCOUNTS.length=0;
   currentAccountId=-1;
   contacts=[];
   relationships=[];
   globalContactId=1;
+  sellerProfile={...DEFAULT_PROFILE};
+  updateProfilePill();
   showAccountsView();
   renderAccountsView();
-  showToast('All data cleared');
+  showToast('All data cleared — fresh start');
 }
 
 
@@ -1752,7 +1764,7 @@ var dragging=null,dragOffset={x:0,y:0};
 var pointerDragActive=false,pointerLongPressTimer=null,pointerStartPos={x:0,y:0};
 
 // ─── EMAIL ─────────────────────────────────────────────────────────────────
-var makeEmail=n=>n.toLowerCase().replace(/[^a-z ]/g,'').trim().split(/\s+/).filter((_,i,a)=>i===0||i===a.length-1).join('.')+'@lfg.com';
+var makeEmail=n=>n.toLowerCase().replace(/[^a-z ]/g,'').trim().split(/\s+/).filter((_,i,a)=>i===0||i===a.length-1).join('.')+'@'+((ACCOUNTS[currentAccountId]?.name||'company').toLowerCase().replace(/[^a-z]/g,'')+'.com');
 var mailtoLink=(c,sub)=>`mailto:${makeEmail(c.name)}?subject=${encodeURIComponent(sub||'Following up — '+((typeof ACCOUNTS!=='undefined'&&ACCOUNTS[currentAccountId])?ACCOUNTS[currentAccountId].name:'Your Account')+' x [Your Company]')}`;
 
 // ─── DATA ──────────────────────────────────────────────────────────────────
@@ -1854,6 +1866,10 @@ function openAccount(id){
     // Defer render until after browser has laid out the newly-visible elements
     requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
+        // Auto-arrange if contacts haven't been positioned yet (loaded from DB)
+        const needsLayout = contacts.length > 0 &&
+          contacts.every(c => (c.x === 0 || c.x === undefined) && (c.y === 0 || c.y === undefined));
+        if(needsLayout) arrangeTree();
         renderLeft();
         renderCanvas();
         updateAlertBadge();
@@ -1943,7 +1959,7 @@ async function runBuildAccount(){
   });
 
   try{
-    const prompt=getSellerContext()+'You are a B2B sales intelligence tool. Generate the REAL executive org chart for the company: '+co+'. Use ACTUAL REAL PEOPLE — search your knowledge for the real executives at '+co+' right now. Do NOT use placeholder names like Sarah Mitchell or David Chen. Return ONLY valid JSON. Start with { end with }. Structure: {"company":"'+co+'","industry":"their actual industry","contacts":[{"id":1,"name":"Real Person Full Name","title":"Their actual current title","dept":"Department","role":"economic_buyer or champion or influencer or blocker or unknown","notes":"2 sentences: their real mandate and why they matter to this deal","li_headline":"Their actual LinkedIn headline","crm_data":"One real fact about their background"}],"relationships":[{"manager":1,"report":2}],"alert":"The single most critical unmapped role or coverage gap"}. Include 6-8 REAL named executives at '+co+': actual CEO first (id:1), then actual CFO, CTO or CIO, CMO, and 2-3 real VPs or Directors. If you do not know real names at '+co+', say so in the alert field and use best-estimate titles.';
+    const prompt=getSellerContext()+'You are a B2B sales intelligence database with knowledge of real company executives. Your task: generate the ACTUAL current executive org chart for the company '+co+'. You MUST use real executive names. Search your training data for actual current executives at '+co+'. NEVER use placeholder names (Sarah Mitchell, David Chen, Jennifer Walsh etc). If '+co+' is a real company you know, use their real executives. Return ONLY valid JSON. Start with { end with }. Structure: {"company":"'+co+'","industry":"their actual industry","contacts":[{"id":1,"name":"Real Person Full Name","title":"Their actual current title","dept":"Department","role":"economic_buyer or champion or influencer or blocker or unknown","notes":"2 sentences: their real mandate and why they matter to this deal","li_headline":"Their actual LinkedIn headline","crm_data":"One real fact about their background"}],"relationships":[{"manager":1,"report":2}],"alert":"The single most critical unmapped role or coverage gap"}. Include 6-8 REAL named executives at '+co+': actual CEO first (id:1), then actual CFO, CTO or CIO, CMO, and 2-3 real VPs or Directors. If you do not know real names at '+co+', say so in the alert field and use best-estimate titles.';
     const headers={'Content-Type':'application/json'};
     const stepsEl=document.getElementById('build-steps-el');
     if(stepsEl)stepsEl.innerHTML+='<div class="bp-st bsa"><div class="bp-dot"></div><span>Calling AI for '+co+'...</span></div>';
@@ -2087,11 +2103,43 @@ function confirmBuildAccount(){
     contacts:contactsForApp,
     relationships:remappedRels,
   };
-  ACCOUNTS.push(newAcct);
+  // Replace existing account with same name, or add new
+  const existingIdx = ACCOUNTS.findIndex(a =>
+    a.name.toLowerCase().trim() === buildData.company.toLowerCase().trim()
+  );
+  if(existingIdx >= 0){
+    // Keep the db_id so Supabase upsert works correctly
+    const dbId = ACCOUNTS[existingIdx].db_id;
+    newAcct.id = existingIdx;
+    newAcct.db_id = dbId;
+    ACCOUNTS[existingIdx] = newAcct;
+    showToast(`${buildData.company} rebuilt — ${contactsForApp.length} contacts`);
+  } else {
+    ACCOUNTS.push(newAcct);
+    showToast(`${buildData.company} added — ${contactsForApp.length} contacts`);
+  }
   saveAccounts();
   closeBuildModal();
   renderAccountsView();
-  showToast(`${buildData.company} added — ${contactsForApp.length} contacts (Level 1)`);
+}
+
+
+function deleteAccount(acctId, e){
+  if(e){e.stopPropagation();}
+  const acct = ACCOUNTS[acctId];
+  if(!acct) return;
+  if(!confirm('Delete "' + acct.name + '"? This cannot be undone.')) return;
+  // Delete from Supabase
+  if(currentUser && acct.db_id){
+    sb.from('accounts').delete().eq('id', acct.db_id)
+      .then(({error}) => { if(error) console.error('Delete error:', error); });
+  }
+  // Remove from local array and re-index
+  ACCOUNTS.splice(acctId, 1);
+  ACCOUNTS.forEach((a, i) => { a.id = i; });
+  localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(ACCOUNTS));
+  renderAccountsView();
+  showToast('"' + acct.name + '" deleted');
 }
 
 function confirmManualAccount(){
@@ -2177,6 +2225,7 @@ function renderAccountsView(){
           <button class="acct-card-btn" id="open-acct-${acct.id}"><svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>View Map</button>
           <button class="acct-card-btn" id="insights-acct-${acct.id}"><svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Map Gaps</button>
           <button class="acct-card-btn" id="add-acct-${acct.id}"><svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Add Contact</button>
+          <button class="acct-card-btn" id="del-acct-${acct.id}" style="color:var(--text3)" title="Delete account"><svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
         </div>`;
 
       // Wire up events
@@ -2184,6 +2233,7 @@ function renderAccountsView(){
       card.querySelector(`#open-acct-${acct.id}`).addEventListener('click',e=>{e.stopPropagation();openAccount(acct.id);});
       card.querySelector(`#insights-acct-${acct.id}`).addEventListener('click',e=>{e.stopPropagation();openAccount(acct.id);setTimeout(openInsightsModal,350);});
       card.querySelector(`#add-acct-${acct.id}`).addEventListener('click',e=>{e.stopPropagation();openAccount(acct.id);setTimeout(openAddModal,350);});
+      card.querySelector(`#del-acct-${acct.id}`).addEventListener('click',e=>{deleteAccount(acct.id,e);});
       grid.appendChild(card);
     });
 
@@ -2468,7 +2518,7 @@ function renderCanvas(){
           ${integrations.linkedin?`<div class="node-int-dot" style="background:var(--linkedin)"></div>`:''}
         </div>
         <div class="engagement-bar"><div class="engagement-fill fill-${cls}" style="width:${fill}%"></div></div>
-        <div class="touch-label">${c.lastTouch}d</div>
+        <div class="touch-label" style="color:${c.lastTouch===null?'var(--text3)':c.lastTouch<=7?'var(--green)':c.lastTouch<=30?'var(--yellow)':'var(--red)'}">${c.lastTouch!==null&&c.lastTouch!==undefined?c.lastTouch+'d':'—'}</div>
       </div>`;
 
     // ── Unified pointer events (mouse + touch) ──────────────────────────────
